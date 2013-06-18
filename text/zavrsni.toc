@@ -1,0 +1,20 @@
+\select@language {croatian}
+\contentsline {chapter}{Popis tablica}{v}
+\contentsline {chapter}{Popis slika}{vi}
+\contentsline {chapter}{\numberline {1}Uvod}{1}
+\contentsline {chapter}{\numberline {2}Poravnavanje struktura}{2}
+\contentsline {section}{\numberline {2.1}Ocjenjivanje procjepa}{2}
+\contentsline {chapter}{\numberline {3}Needleman-Wunschov algoritam}{3}
+\contentsline {section}{\numberline {3.1}Algoritam}{3}
+\contentsline {section}{\numberline {3.2}Afina funkcija kazne}{4}
+\contentsline {subsection}{\numberline {3.2.1}Formalna definicija Needleman-Wunschovog algoritma s afinom funkcijom kazne}{5}
+\contentsline {chapter}{\numberline {4}Predmeta\IeC {\v c}ni ra\IeC {\v c}un}{6}
+\contentsline {section}{\numberline {4.1}Primjer}{6}
+\contentsline {section}{\numberline {4.2}Algoritam}{7}
+\contentsline {subsection}{\numberline {4.2.1}Sekvencijalni algoritam}{7}
+\contentsline {subsection}{\numberline {4.2.2}Paralelni algoritam}{7}
+\contentsline {chapter}{\numberline {5}CUDA tehnologija}{10}
+\contentsline {chapter}{\numberline {6}Implementacija}{11}
+\contentsline {chapter}{\numberline {7}Rezultati}{12}
+\contentsline {chapter}{\numberline {8}Zaklju\IeC {\v c}ak}{13}
+\contentsline {chapter}{Literatura}{14}

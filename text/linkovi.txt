@@ -1,0 +1,9 @@
+http://www.cs.cmu.edu/~guyb/papers/Ble93.pdf
+
+http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html
+
+http://ai.stanford.edu/~serafim/CS262_2006/LectureNotes/lecture3.pdf
+
+http://www.nvidia.com/object/cuda_home_new.html
+
+http://docs.nvidia.com/cuda/cuda-c-programming-guide/
