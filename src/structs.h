@@ -18,5 +18,15 @@ typedef struct {
 	int thread_chunk;
 } configuration;
 
+typedef struct {
+	int val;
+	int idx;
+} vector_element;
+
+typedef struct {
+	vector_element el;
+	int row;
+} matrix_element;
+
 
 #endif

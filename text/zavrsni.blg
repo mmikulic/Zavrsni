@@ -1,5 +1,19 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: zavrsni.aux
 The style file: fer.bst
-I found no \citation commands---while reading file zavrsni.aux
 Database file #1: literatura.bib
-(There was 1 error message)
+I was expecting a `,' or a `}'---line 25 of file literatura.bib
+ : 
+ : url= {http://www.cs.cmu.edu/~guyb/papers/Ble93.pdf}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 30 of file literatura.bib
+ : 
+ : title= {Parallel Prefix Sum (Scan) with CUDA}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+Warning--to sort, need author, organization, or key in cuda
+Warning--empty year in cuda
+Warning--empty publisher in blelloch
+Warning--empty publisher in salign
+Warning--empty publisher in gapopen
+(There were 2 error messages)

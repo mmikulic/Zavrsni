@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (MiKTeX 2.9) (preloaded format=pdflatex 2013.5.22)  18 JUN 2013 18:39
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (MiKTeX 2.9) (preloaded format=pdflatex 2013.5.22)  20 JUN 2013 20:51
 entering extended mode
 **zavrsni.tex
 ("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.tex"
@@ -479,24 +479,57 @@ Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \@lastruleclass=\count111
 \@thisrulewidth=\dimen144
 )
+("C:\Program Files\MiKTeX 2.9\tex\latex\xcolor\xcolor.sty"
+Package: xcolor 2007/01/21 v2.11 LaTeX color extensions (UK)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\00miktex\color.cfg"
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\colortbl\colortbl.sty"
+Package: colortbl 2012/02/13 v1.0a Color table columns (DPC)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\tools\array.sty"
+Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
+\col@sep=\dimen145
+\extrarowheight=\dimen146
+\NC@list=\toks25
+\extratabsurround=\skip49
+\backup@length=\skip50
+)
+\everycr=\toks26
+\minrowclearance=\skip51
+)
+\rownum=\count112
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1337.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1341.
+Package xcolor Info: Model `RGB' extended on input line 1353.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1355.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1356.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1357.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1358.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1359.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1360.
+)
 ("C:\Program Files\MiKTeX 2.9\tex\latex\listings\listings.sty"
-\lst@mode=\count112
+\lst@mode=\count113
 \lst@gtempboxa=\box29
-\lst@token=\toks25
-\lst@length=\count113
-\lst@currlwidth=\dimen145
-\lst@column=\count114
-\lst@pos=\count115
-\lst@lostspace=\dimen146
-\lst@width=\dimen147
-\lst@newlines=\count116
-\lst@lineno=\count117
-\lst@maxwidth=\dimen148
+\lst@token=\toks27
+\lst@length=\count114
+\lst@currlwidth=\dimen147
+\lst@column=\count115
+\lst@pos=\count116
+\lst@lostspace=\dimen148
+\lst@width=\dimen149
+\lst@newlines=\count117
+\lst@lineno=\count118
+\lst@maxwidth=\dimen150
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\listings\lstmisc.sty"
 File: lstmisc.sty 2007/02/22 1.4 (Carsten Heinz)
-\c@lstnumber=\count118
-\lst@skipnumbers=\count119
+\c@lstnumber=\count119
+\lst@skipnumbers=\count120
 \lst@framebox=\box30
 )
 ("C:\Program Files\MiKTeX 2.9\tex\latex\listings\listings.cfg"
@@ -504,19 +537,9 @@ File: listings.cfg 2007/02/22 1.4 listings configuration
 ))
 Package: listings 2007/02/22 1.4 (Carsten Heinz)
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\color.sty"
-Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
-
-("C:\Program Files\MiKTeX 2.9\tex\latex\00miktex\color.cfg"
-File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
-)
-Package color Info: Driver file: pdftex.def on input line 130.
-)
 ("C:\Program Files\MiKTeX 2.9\tex\latex\setspace\setspace.sty"
 Package: setspace 2011/12/19 v6.7a set line spacing
 )
-Package color Info: Redefining color black on input line 12.
-
 ("C:\Program Files\MiKTeX 2.9\tex\latex\listings\lstlang1.sty"
 File: lstlang1.sty 2004/09/05 1.3 listings language file
 )
@@ -524,19 +547,19 @@ File: lstlang1.sty 2004/09/05 1.3 listings language file
 File: lstmisc.sty 2007/02/22 1.4 (Carsten Heinz)
 )
 ("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.aux")
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Try loading font information for T1+ptm on input line 36.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Try loading font information for T1+ptm on input line 37.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\t1ptm.fd"
 File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
@@ -577,40 +600,40 @@ File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
 
 ("C:\Program Files\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count120
-\scratchdimen=\dimen149
+\scratchcounter=\count121
+\scratchdimen=\dimen151
 \scratchbox=\box31
-\nofMPsegments=\count121
-\nofMParguments=\count122
-\everyMPshowfont=\toks26
-\MPscratchCnt=\count123
-\MPscratchDim=\dimen150
-\MPnumerator=\count124
-\makeMPintoPDFobject=\count125
-\everyMPtoPDFconversion=\toks27
+\nofMPsegments=\count122
+\nofMParguments=\count123
+\everyMPshowfont=\toks28
+\MPscratchCnt=\count124
+\MPscratchDim=\dimen152
+\MPnumerator=\count125
+\makeMPintoPDFobject=\count126
+\everyMPtoPDFconversion=\toks29
 )
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
-\c@lstlisting=\count126
-LaTeX Font Info:    Try loading font information for T1+phv on input line 47.
+\c@lstlisting=\count127
+LaTeX Font Info:    Try loading font information for T1+phv on input line 45.
  ("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\t1phv.fd"
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
 )
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 47.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 45.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 47.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 45.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <24.88> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 47.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 45.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <24.88> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 47.
-LaTeX Font Info:    Try loading font information for U+msa on input line 47.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 45.
+LaTeX Font Info:    Try loading font information for U+msa on input line 45.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 47.
+LaTeX Font Info:    Try loading font information for U+msb on input line 45.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
@@ -618,7 +641,7 @@ File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 
 {C:/Documents and Settings/All Users/Application Data/MiKTeX/2.9/pdftex/config/
 pdftex.map}]
-LaTeX Font Info:    Try loading font information for T1+pcr on input line 50.
+LaTeX Font Info:    Try loading font information for T1+pcr on input line 48.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\t1pcr.fd"
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
@@ -641,106 +664,108 @@ LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <12> not available
  [6
 
 ]
-("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.lol")
-\tf@lol=\write6
- [7
-
-]
 Poglavlje 1.
 [1
 
 ]
 Poglavlje 2.
-LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <17.28> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 99.
-<poravnanje.png, id=34, 463.7325pt x 169.63374pt>
+<poravnanje.png, id=31, 463.7325pt x 169.63374pt>
 File: poravnanje.png Graphic file (type png)
  <use poravnanje.png>
-Package pdftex.def Info: poravnanje.png used on input line 109.
+Package pdftex.def Info: poravnanje.png used on input line 95.
 (pdftex.def)             Requested size: 256.0748pt x 93.67415pt.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 110.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 96.
  [2
 
  <D:/FER/godina_3/Ljetni_semestar/Zavrsni rad/poravnanje.png>]
 Poglavlje 3.
-LaTeX Font Info:    Font shape `T1/ptm/bx/it' in size <12> not available
-(Font)              Font shape `T1/ptm/b/it' tried instead on input line 148.
+LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <17.28> not available
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 105.
 [3
 
-] [4]
-Overfull \hbox (2.54044pt too wide) in paragraph at lines 192--192
-[]\T1/ptm/b/n/14.4 Formalna de-fi-ni-cija Needleman-Wunschovog al-go-ritma s af
-i-
+]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[4] [5] [6] [7]
+Poglavlje 4.
+[8
+
+]
+Overfull \hbox (32.5071pt too wide) in paragraph at lines 390--391
+[]\T1/ptm/m/n/12 U£inkovita pa-ra-lelna im-ple-men-ta-cija pred-me-ta£-nog ra-£
+una te-me-lji se na radu Blellocha[[]]
  []
 
-[5]
-Poglavlje 4.
-[6
-
-] [7] <redukcija.png, id=63, 423.5825pt x 388.45125pt>
+[9] <redukcija.png, id=66, 423.5825pt x 388.45125pt>
 File: redukcija.png Graphic file (type png)
  <use redukcija.png>
-Package pdftex.def Info: redukcija.png used on input line 293.
+Package pdftex.def Info: redukcija.png used on input line 402.
 (pdftex.def)             Requested size: 256.0748pt x 234.84479pt.
 
-[8 <D:/FER/godina_3/Ljetni_semestar/Zavrsni rad/redukcija.png>]
-<predtrazenje.png, id=67, 417.56pt x 476.78125pt>
+[10 <D:/FER/godina_3/Ljetni_semestar/Zavrsni rad/redukcija.png>]
+<predtrazenje.png, id=70, 417.56pt x 476.78125pt>
 File: predtrazenje.png Graphic file (type png)
  <use predtrazenje.png>
-Package pdftex.def Info: predtrazenje.png used on input line 315.
+Package pdftex.def Info: predtrazenje.png used on input line 428.
 (pdftex.def)             Requested size: 256.0748pt x 292.40755pt.
 
-[9 <D:/FER/godina_3/Ljetni_semestar/Zavrsni rad/predtrazenje.png>]
+[11 <D:/FER/godina_3/Ljetni_semestar/Zavrsni rad/predtrazenje.png>]
 Poglavlje 5.
-[10
-
-]
-Poglavlje 6.
-[11
-
-]
-Poglavlje 7.
 [12
+
+] [13]
+Poglavlje 6.
+[14
+
+] [15] [16]
+Poglavlje 7.
+[17
 
 ]
 Poglavlje 8.
-("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.bbl" [13
+("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.bbl" [18
 
 ]
+Underfull \hbox (badness 1043) in paragraph at lines 9--11
+[]\T1/ptm/m/it/12 CUDA\T1/ptm/m/n/12 .  URL $\T1/pcr/m/n/12 http : / / www . nv
+idia . com / object / cuda _ home _ new .$
+ []
 
-Package natbib Warning: Empty `thebibliography' environment on input line 8.
+) [19
 
-) [14
-
-] [15] ("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.aux") ) 
+] [20] ("D:\FER\godina_3\Ljetni_semestar\Zavrsni rad\zavrsni.aux") ) 
 Here is how much of TeX's memory you used:
- 7274 strings out of 494045
- 98631 string characters out of 3148333
- 206847 words of memory out of 3000000
- 10409 multiletter control sequences out of 15000+200000
- 73784 words of font info for 93 fonts, out of 3000000 for 9000
+ 7781 strings out of 494045
+ 104388 string characters out of 3148333
+ 210304 words of memory out of 3000000
+ 10911 multiletter control sequences out of 15000+200000
+ 61581 words of font info for 87 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
- 43i,7n,49p,557b,1208s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 43i,15n,49p,585b,1336s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program
  Files/MiKTeX 2.9/fonts/enc/dvips/fontname/8r.enc}<C:/Program Files/MiKTeX 2.9/
 fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
 pe1/public/amsfonts/cm/cmmi12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/publ
-ic/amsfonts/cm/cmmi8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfon
-ts/cm/cmr12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr
-8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C
-:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program
- Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Program Files/MiKTeX 2
-.9/fonts/type1/urw/courier/ucrro8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1
-/urw/helvetic/uhvb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helvetic/
-uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Pr
-ogram Files/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKT
-eX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type
-1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri
-8a.pfb>
-Output written on zavrsni.pdf (22 pages, 205685 bytes).
+ic/amsfonts/cm/cmmi6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfon
+ts/cm/cmmi8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr
+12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:
+/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program
+ Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program Files/Mi
+KTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/
+type1/urw/courier/ucrro8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helv
+etic/uhvb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pf
+b><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Fil
+es/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fon
+ts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/time
+s/utmri8a.pfb>
+Output written on zavrsni.pdf (26 pages, 233562 bytes).
 PDF statistics:
- 141 PDF objects out of 1000 (max. 8388607)
+ 154 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

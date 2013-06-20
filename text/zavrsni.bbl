@@ -1,8 +1,50 @@
-\begin{thebibliography}{0}
+\begin{thebibliography}{8}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[cud()]{cuda}
+\emph{CUDA}.
+\newblock URL \url{http://www.nvidia.com/object/cuda_home_new.html}.
+
+\bibitem[Aluru et~al.(2002)Aluru, Futamura, i Mehrotra]{aluru}
+Srinivas Aluru, Natsuhiko Futamura, i Kishan Mehrotra.
+\newblock Parallel biological sequence comparison using prefix computations.
+\newblock \emph{Journal of Parallel and Distributed Computing}, 63:\penalty0
+  264--272, 2002.
+
+\bibitem[Blelloch(1990)]{blelloch}
+Guy~E. Blelloch.
+\newblock \emph{Prefix Sums and Their Applications}.
+\newblock 1990.
+
+\bibitem[Mount(2004)]{salign}
+Mount.
+\newblock \emph{Bioinformatics: Sequence and Genome Analysis}.
+\newblock 2004.
+
+\bibitem[Needleman i Wunsch(1970)]{nwarticle}
+Saul~B. Needleman i Christian~D. Wunsch.
+\newblock A general method applicable to the search for similarities in the
+  amino acid sequence of two proteins.
+\newblock \emph{Journal of Molecular Biology}, 48:\penalty0 443--453, 1970.
+
+\bibitem[Rahle(2012)]{rahlezavrsni}
+Bruno Rahle.
+\newblock Swig - poravnanje struktura korištenjem iterativne primjene
+  smith-waterman algoritma.
+\newblock Završni rad, 6 2012.
+
+\bibitem[Smith i Waterman(1981)]{swarticle}
+Temple~F. Smith i Michael~S. Waterman.
+\newblock Identification of common molecular subsequences.
+\newblock \emph{Journal of Molecular Biology}, 147:\penalty0 195--197, 1981.
+
+\bibitem[Taylor i Munro(1997)]{gapopen}
+Taylor i Munro.
+\newblock \emph{Multiple sequence threading: conditional gap placement}.
+\newblock 1997.
 
 \end{thebibliography}

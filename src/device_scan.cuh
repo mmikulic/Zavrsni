@@ -5,17 +5,20 @@
 #include "utils.cuh"
 #include "cub/cub.cuh"
 
-__device__ __host__
-
-__device__ void deviceScan(int *in, int *out, int size) {
-	int it;
-	//pozvati devicereduce
-	cub::DeviceReduce::Reduce(in, out, size, MaxOperator<int>());
-	
-	for (it = log2(size) - 1; it >= 0; --it) {
-		
+__device__ void reduce(int *array, int limit, int offset, int pow) {
+	int step = 1 << pow;
+	for (int i = closestPow2(offset) - 1; i < limit; i += step) {
+		*(array + i) = max(*(array + i - step), *(array + i));
 	}
-	
+}
+
+__device__ void prescan(int *array, int limit, int offset, int pow) {
+	for ()
+}
+
+__device__ void deviceScan(int *array, int limit, int offset, int pow) {
+	reduce(array, limit, offset, pow);
+	prescan(array, limit, offset, pow);
 }
 
 
