@@ -1,5 +1,5 @@
-#ifndef FIND_SCORE_CUH
-#define FIND_SCORE_CUH
+#ifndef FIND_SCORE_BLOCK_CUH
+#define FIND_SCORE_BLOCK_CUH
 
 #include "cuda.h"
 #include "structs.h"
@@ -11,79 +11,78 @@
 __global__ find_score (gap *penalty, 
 					   	   char *horizontal, 
 					   	   char vertical, 
-					   	   int h_length,  
+					   	   int row_len,  
 					   	   data *input, 
 					       data *output,
 					       configuration config, 
 					       int *total_max) {
-	int start = (blockIdx.x * config.block_size + threadIdx.x) * config.thread_chunk;
-	int limit = min(start + config.thread_chunk, h_length);
+   	int id = blockIdx.x * config.block_size + threadIdx.x;
+	int start = id * config.thread_chunk;
+	int limit = min(start + config.thread_chunk, row_len);
 	
 	int it = start;
-	vector_element max_scr;
-	max_scr.val = INIT_VAL;
-	max_scr.idx = -1;
+	int max_scr = INIT_VAL;
+	int h_max = INIT_VAL;
 	//check
-	if (start == 0) {
-		*(output->N + start) = INIT_VAL;
-		*(output->H + start) = INIT_VAL;//this is a bit out of place, but it should be faster this way
-		*(output->V + start) = INIT_VAL;
+	if (it == 0) {
+		*(output + it)->N = INIT_VAL;
+		*(output + it)->H = INIT_VAL;
+		*(output + it)->V = INIT_VAL;
+		++it;
 	}
 	
-	for (it = start + 1; it < limit; ++it) {
+	while (it < limit) {
 		if (*(horizontal + it - 1) == config.reset) {
-			*(output->N + it) = INIT_VAL;
-			*(output->H + it) = INIT_VAL; //this is a bit out of place, but it should be faster this way
-			*(output->V + it) = INIT_VAL;
+			*(output + it)->N = INIT_VAL;
+			*(output + it)->H = INIT_VAL;
+			*(output + it)->V = INIT_VAL;
 		} else {
-			*(output->N + it) = max(0, (*(horizontal + it - 1) == vertical) + 
-										max(*(input->N + it - 1),
-											max(*(input->H + it - 1), 
-												*(input->V + it - 1)
+			*(output + it)->N = max(0, (*(horizontal + it - 1) == vertical) + 
+										max(*(input + it - 1)->N,
+											max(*(input + it - 1)->H, 
+												*(input + it - 1)->V
 											   )
 									   	   )
 								   );
-				//check if allowed
-			*(output->V + it) = max(max(*(input->N + it) - penalty->open, 0),
-									max(*(input->H + it) - penalty->open, 
-										*(input->V + it) - penalty->extension
+			*(output + it)->H = max(0, 
+									max(*(output + it - 1)->N, 
+										*(output + it - 1)->V
+									   ) 
+									- penalty->open + it * penalty->extension
+								   );//check
+			*(output + it)->V = max(max(*(input + it)->N - penalty->open, 0),
+									max(*(input + it)->H - penalty->open, 
+										*(input + it)->V - penalty->extension
 									   )
 								   );
 		}
-		if (*(output->N + it) > max_scr.val) {
-			max_scr.val = *(output->N + it);
-			max_scr.idx = it;
-		}
+		if (*(output + it)->N > max_scr)
+			max_scr = *(output + it)->N;
+		if (*(output + it)->H > h_max)
+			h_max = *(output + it)->H;
+		++it;
 	}
 	
 	//device reduce faza za N i V
-	
-	max_scr.val = INIT_VAL;
-	max_scr.idx = -1;	
-	for (it = start + 1; it < limit; ++it) {
-		if (*(horizontal + it - 1) == config.reset)
-			continue;
-		else {
-			*(output->H + it) = max(0, 
-									max(*(output->N + it - 1), 
-										*(output->V + it - 1)
-									   ) 
-									- penalty->open + it * penalty->extension);
-			if (*(output->N + it) > max_scr.val) {
-				max_scr.val = *(output->N + it);
-				max_scr.idx = it;
-			}
-		}
-	}
+	__syncthreads();
+	typedef cub::BlockReduce<int, config.thread_chunk> BlockReduce;
+	__shared__ typename BlockReduce::SmemStorage smem_storage;
+	max_scr = BlockReduce::Reduce(smem_storage, max_scr, maxop<int>());
+	if (id == 0 && *total_max < max_scr)
+		*total_max = max_scr;
 	
 	//devicescan faza za H
+	__syncthreads();
+	int identity = 0;
+	typedef cub::BlockScan<int, config.thread_chunk> BlockScan;
+	BlockScan::ExclusiveScan(smem_storage, h_max, h_max, identity, maxop<int>());
 
-	*(output->H + start) = max(0, max_scr.val);
+	*(output + start)->H = max(0, max_scr - it * penalty->extension);
 	for (it = start + 1; it < limit; ++it) {
 		if (*(horizontal + it - 1) == config.reset)
-			*(output->H + it) = INIT_VAL;
+			*(output + it)->H = INIT_VAL;
 		else
-			*(output->H + it) = max(0, *(output->H + it - 1) - it * penalty->extension);
+			*(output + it)->H = max(0, *(output + it - 1)->H - it * penalty->extension);
 	}
 }
 

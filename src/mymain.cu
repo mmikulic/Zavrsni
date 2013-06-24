@@ -4,8 +4,7 @@
 
 #include "cuda.h"
 #include "structs.h"
-#include "device_scan.cuh"
-#include "find_score.cuh"
+#include "find_score_1_block.cuh"
 
 char *get_protein(char *filename, int *s, char reset) {
 	FILE *f = fopen(filename, "r");
@@ -61,11 +60,13 @@ char *get_protein(char *filename, int *s, char reset) {
 	return protein;
 }
 
-void init(data *mat, int val, int size) {
+void init(data **mat, int val, int size) {
+	*mat = (data *)malloc(size * sizeof(data));
+	
 	for (int i = 0; i < size; ++i) {
-		*(mat->N + i) = 0;
-		*(mat->H + i) = 0;
-		*(mat->V + i) = 0;
+		(*(*mat + i))->N = val;
+		(*(*mat + i))->H = val;
+		(*(*mat + i))->V = val;
 	}
 }
 
@@ -81,11 +82,6 @@ int main(int argc, char **argv) {
 		exit(-1);
 	}
 	
-	configuration config;
-	printf("reset character?\n> ");
-	scanf(" %c", &(config.reset));
-	config.thread_chunk = 512;
-	
 	int v_len = 0;	
 	char *vertical = get_protein(argv[1], &v_len, config.reset);
 	
@@ -96,27 +92,60 @@ int main(int argc, char **argv) {
 		++h_len;
 		strcat(horizontal, get_protein(argv[i], &h_len, config.reset));
 	}
+	char *dev_h;//dev
+	cudaSetAndCopyToDevice(&dev_h, horizontal, h_len * sizeof(char));
 	
-	int mat_len = h_len + 1;
-	config.block_size = (mat_len + config.thread_chunk - 1) / config.thread_chunk;
-	data mat1;
-	mat1.N = (int *)malloc(mat_len * int);
-	mat1.H = (int *)malloc(mat_len * int);
-	mat1.V = (int *)malloc(mat_len * int);
+	int row_len = h_len + 1;
+	configuration config;
+	config.reset = '#';
+	config.grid_size = 1;
+	config.block_size = min(512, (row_len + 9) / 10);
+	config.thread_chunk = (row_len + config.block_size - 1) / config.block_size;
 	
-	data mat2;
-	mat2.N = (int *)malloc(mat_len * int);
-	mat2.H = (int *)malloc(mat_len * int);
-	mat2.V = (int *)malloc(mat_len * int);
+	data *matRow[2];//TODO: set up
+	data *devMatRow[2];//TODO: set up
 	
-	data *prev = &mat1;
-	data *curr = &mat2;
+	init(&matRow[0], 0, row_len);
+	init(&matRow[1], 0, row_len);
 	
-	init(prev, 0, mat_len);
-	init(curr, 0, mat_len);
+	cudaSetAndCopyToDevice(&devMatRow[0], matRow[0], row_len * sizeof(data));
+	cudaSetAndCopyToDevice(&devMatRow[1], matRow[1], row_len * sizeof(data));
 	
-	data devMat1;
-	data devMat2;
+	int curr = 0;
+	int total_max = -1;
+	int *dev_total_max;//dev
 	
+	gap penalty;
+	penalty->open = 5;
+	penalty->extension = 2;
+	gap *dev_penalty;
+	
+	cudaSetAndCopyToDevice(&dev_penalty, &penalty, sizeof(gap));
+	cudaSetAndCopyToDevice(&dev_total_max, &total_max, sizeof(int));
+	
+	clock_t start_time = clock();
+	for (int i = 0; i < v_len; ++i) {
+		find_score<<<config.grid_size, config.block_size>>>(
+			dev_penalty,
+			dev_h,
+			vertical[i],
+			row_len,
+			devMatRow[curr ^ 1],
+			devMatRow[curr],
+			config,
+			dev_total_max
+		);
+		curr ^= 1;
+	}
+	clock_t end_time = clock();
+	printf("Time: %d ticks; %.4gs\n", end_time-start_time, (end_time-start_time)/(double)CLK_TCK)
+	cudaCopyToHostAndFree(&total_max, dev_total_max, sizeof(int));
+	printf("max local alignment: %d\n", total_max);
+	
+	cudaFree(devMatRow[0]);
+	cudaFree(devMatRow[1]);
+	cudaFree(dev_penalty);
+	cudaFree(dev_h);
+		
 	return 0;
 }
