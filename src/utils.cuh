@@ -39,13 +39,14 @@ void safeAPIcall(cudaError_t err, int line) {
 	}
 }
 
-void cudaSetAndCopyToDevice(void **dest, void *src, int size) {
-	cudaMalloc(dest, size);
-	cudaMemcpy(dest, src, size, cudaMemcpyHostToDevice);
+void cudaSetAndCopyToDevice(void **dest, void *src, int size, int line) {
+	safeAPIcall(cudaMalloc(dest, size), line);
+	//printf("\n%d: malloc done\n", line);
+	safeAPIcall(cudaMemcpy(*dest, src, size, cudaMemcpyHostToDevice), line);
 }
 
-void cudaCopyToHostAndFree(void *dest, void *src, int size) {
-	cudaMemcpy(dest, src, size, cudaMemcpyDeviceToHost);
-	cudaFree(src);
+void cudaCopyToHostAndFree(void *dest, void *src, int size, int line) {
+	safeAPIcall(cudaMemcpy(dest, src, size, cudaMemcpyDeviceToHost), line);
+	safeAPIcall(cudaFree(src), line);
 }
 #endif

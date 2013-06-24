@@ -68,8 +68,8 @@ __global__ void find_score (gap *penalty,
 	//device reduce faza za N i V
 	__syncthreads();
 	typedef cub::BlockReduce<int, THREADS> BlockReduce;
-	__shared__ typename BlockReduce::SmemStorage smem_storage;
-	max_scr = BlockReduce::Reduce(smem_storage, max_scr, maxop<int>());
+	__shared__ typename BlockReduce::SmemStorage reduce_storage;
+	max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<int>());
 	if (id == 0 && *total_max < max_scr)
 		*total_max = max_scr;
 	
