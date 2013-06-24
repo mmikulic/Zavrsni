@@ -3,12 +3,12 @@
 
 #include "cuda.h"
 #include "structs.h"
-#include "cub/cub.cuh"
+#include "cub/cub/cub.cuh"
 
 #define INIT_VAL 0
 #define NEG_INF -(1 << 15)
 
-__global__ find_score (gap *penalty, 
+__global__ void find_score (gap *penalty, 
 					   	   char *horizontal, 
 					   	   char vertical, 
 					   	   int row_len,  
@@ -77,12 +77,12 @@ __global__ find_score (gap *penalty,
 	typedef cub::BlockScan<int, config.thread_chunk> BlockScan;
 	BlockScan::ExclusiveScan(smem_storage, h_max, h_max, identity, maxop<int>());
 
-	*(output + start)->H = max(0, max_scr - it * penalty->extension);
+	(*(output + start))->H = max(0, max_scr - it * penalty->extension);
 	for (it = start + 1; it < limit; ++it) {
 		if (*(horizontal + it - 1) == config.reset)
-			*(output + it)->H = INIT_VAL;
+			(*(output + it))->H = INIT_VAL;
 		else
-			*(output + it)->H = max(0, *(output + it - 1)->H - it * penalty->extension);
+			(*(output + it))->H = max(0, *(output + it - 1)->H - it * penalty->extension);
 	}
 }
 

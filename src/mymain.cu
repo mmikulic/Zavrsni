@@ -65,9 +65,9 @@ void init(data **mat, int val, int size) {
 	*mat = (data *)malloc(size * sizeof(data));
 	
 	for (int i = 0; i < size; ++i) {
-		(*(*mat + i))->N = val;
-		(*(*mat + i))->H = val;
-		(*(*mat + i))->V = val;
+		(*(*mat + i)).N = val;
+		(*(*mat + i)).H = val;
+		(*(*mat + i)).V = val;
 	}
 }
 
@@ -82,6 +82,8 @@ int main(int argc, char **argv) {
 		printf("I expect to receive at least two filenames as arguments.\n");
 		exit(-1);
 	}
+	configuration config;
+	config.reset = '#';
 	
 	int v_len = 0;	
 	char *vertical = get_protein(argv[1], &v_len, config.reset);
@@ -97,8 +99,6 @@ int main(int argc, char **argv) {
 	cudaSetAndCopyToDevice(&dev_h, horizontal, h_len * sizeof(char));
 	
 	int row_len = h_len + 1;
-	configuration config;
-	config.reset = '#';
 	config.grid_size = 1;
 	config.block_size = min(512, (row_len + 9) / 10);
 	config.thread_chunk = (row_len + config.block_size - 1) / config.block_size;
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
 	int *dev_total_max;//dev
 	
 	gap penalty;
-	penalty->open = 5;
-	penalty->extension = 2;
+	penalty.open = 5;
+	penalty.extension = 2;
 	gap *dev_penalty;
 	
 	cudaSetAndCopyToDevice(&dev_penalty, &penalty, sizeof(gap));

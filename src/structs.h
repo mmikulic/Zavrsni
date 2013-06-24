@@ -7,15 +7,16 @@ typedef struct {
 } gap;
 
 typedef struct {
-	int *N;
-	int *H;
-	int *V;
+	int N;
+	int H;
+	int V;
 } data;
 
 typedef struct {
 	char reset;
 	int block_size;
 	int thread_chunk;
+	int grid_size;
 } configuration;
 
 typedef struct {
