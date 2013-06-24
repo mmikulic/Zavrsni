@@ -3,8 +3,9 @@
 #include<string.h>
 
 #include "cuda.h"
+#include "utils.cuh"
 #include "structs.h"
-#include "find_score_1_block.cuh"
+#include "find_score.cuh"
 
 char *get_protein(char *filename, int *s, char reset) {
 	FILE *f = fopen(filename, "r");

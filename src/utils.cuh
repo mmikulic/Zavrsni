@@ -7,7 +7,7 @@ template< typename T > struct MaxOperator {
 	    return a < b ? b : a;
 	}
 };
-
+/*
 __device__ __host__ int log2(int n) {
 	int pow = 0;
 	while((1 << pow) < n)
@@ -25,7 +25,7 @@ __device__ __host__ bool operator< (const vector_element &a, const vector_elemen
 	if (index != other.index) return index > other.index;
 	return value < other.value;
 }
-
+*/
 void exitWithMsg(const char *msg, int exitCode) {
 	printf("ERROR\n");
 	printf("%s\n\n", msg);
