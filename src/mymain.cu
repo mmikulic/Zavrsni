@@ -62,6 +62,10 @@ char *get_protein(char *filename, int *s, char reset) {
 }
 
 void init(data *mat, int val, int size) {
+	data->N = (int *)malloc(size * sizeof(int));
+	data->H = (int *)malloc(size * sizeof(int));
+	data->V = (int *)malloc(size * sizeof(int));
+	
 	for (int i = 0; i < size; ++i) {
 		*(mat->N + i) = 0;
 		*(mat->H + i) = 0;
@@ -81,10 +85,9 @@ int main(int argc, char **argv) {
 		exit(-1);
 	}
 	
-	configuration config;
-	printf("reset character?\n> ");
-	scanf(" %c", &(config.reset));
-	config.thread_chunk = 512;
+	
+//	printf("reset character?\n> ");
+//	scanf(" %c", &(config.reset));
 	
 	int v_len = 0;	
 	char *vertical = get_protein(argv[1], &v_len, config.reset);
@@ -98,25 +101,19 @@ int main(int argc, char **argv) {
 	}
 	
 	int mat_len = h_len + 1;
-	config.block_size = (mat_len + config.thread_chunk - 1) / config.thread_chunk;
-	data mat1;
-	mat1.N = (int *)malloc(mat_len * int);
-	mat1.H = (int *)malloc(mat_len * int);
-	mat1.V = (int *)malloc(mat_len * int);
+	configuration config;
+	config.reset = '#';
+	config.thread_chunk = 256;
+	config.block_size = min(512, (mat_len + config.thread_chunk - 1) / 
+														config.thread_chunk);
+	config.grid_size = (mat_len + config.block_size * config.thread_chunk - 1) / 
+									(config.block_size * config.thread_chunk);
 	
-	data mat2;
-	mat2.N = (int *)malloc(mat_len * int);
-	mat2.H = (int *)malloc(mat_len * int);
-	mat2.V = (int *)malloc(mat_len * int);
+	data matRow[2];//TODO: set up
+	data devMatRow[2];//TODO: set up
 	
-	data *prev = &mat1;
-	data *curr = &mat2;
-	
-	init(prev, 0, mat_len);
-	init(curr, 0, mat_len);
-	
-	data devMat1;
-	data devMat2;
+	int *auxiliary = (int *)malloc(config.grid_size);
+	int devAux;//set up
 	
 	return 0;
 }

@@ -5,11 +5,14 @@
 #include "utils.cuh"
 #include "cub/cub.cuh"
 
-__device__ void reduce(int *array, int limit, int offset, int pow) {
-	int step = 1 << pow;
-	for (int i = closestPow2(offset) - 1; i < limit; i += step) {
-		*(array + i) = max(*(array + i - step), *(array + i));
+__device__ void deviceReduce(int *array, int thoffset, int thlimit, int arraysize) {
+	int limit = log2(arraysize);	
+	offset = closestPow2(offset);
+	
+	for (d = 1; d < limit; ++d) {
+		
 	}
+	
 }
 
 __device__ void prescan(int *array, int limit, int offset, int pow) {

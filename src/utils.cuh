@@ -1,12 +1,18 @@
 #ifndef UTILS_CUH
 #define UTILS_CUH
 
-template< typename T > struct MaxOperator {
-	__device__ __host__ MaxOperator() {}
+template< typename T > struct maxop {
+	__device__ __host__ maxop() {}
 	__device__ __host__ T operator() (const T &a, const T &b) const {
 	    return a < b ? b : a;
 	}
 };
+
+//check
+__device__ __host__ bool operator< (const vector_element &a, const vector_element &b) const {
+	if (index != other.index) return index > other.index;
+	return value < other.value;
+}
 
 __device__ __host__ int log2(int n) {
 	int pow = 0;
@@ -19,11 +25,6 @@ __device__ __host__ int closestPow2(int n) {
 	while(num <= n)
 		num = num << 1;
 	return num;
-}
-
-__device__ __host__ bool operator< (const vector_element &a, const vector_element &b) const {
-	if (index != other.index) return index > other.index;
-	return value < other.value;
 }
 
 void exitWithMsg(const char *msg, int exitCode) {

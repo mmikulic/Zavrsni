@@ -47,7 +47,7 @@ tabsize=2
 % Ispis stranice s napomenom o umetanju izvornika rada. Uklonite naredbu \izvornik ako želite izbaciti tu stranicu.
 \izvornik
 
-\zahvala{Hvala Miletu što me motivirao da se posvetim računarstvu, na ukazanom povjerenju, na prenesenom znanju i ponajviše na strpljenju.}
+\zahvala{Hvala Mili što me motivirao da se posvetim računarstvu, na ukazanom povjerenju, na prenesenom znanju i ponajviše na strpljenju.}
 
 \tableofcontents
 
@@ -80,7 +80,7 @@ Poglavlje 5 opisuje tehnologiju CUDA, a poglavlje 6 specifičnosti implementacij
 \chapter{Poravnavanje struktura}
 \indent
 
-Kao jedan od ključnih problema bioinformatike nametnuo se problem poravnanja molekula proteina i DNA. Svrha tog poravnanja jest ustanoviti područja sličnosti između tih struktura, jer ona mogu indicirati funkcijsku, strukturalnu ili evolucijsku vezu između njih.\cite{salign}
+Kao jedan od ključnih problema bioinformatike nametnuo se problem poravnanja molekula proteina i DNA. Svrha tog poravnanja jest ustanoviti područja sličnosti između tih struktura, jer ona mogu indicirati funkcijsku, strukturalnu ili evolucijsku vezu između njih\cite{salign}.
 
 Za potrebe informatike, problem poravnanja struktura se može svesti na problem poravnavanja slijedova znakova. Za ilustraciju, zamislimo da se slijedovi koje poravnavamo stave jedan ispod drugog. U tom slučaju, cilj je tako postaviti znakove nizova da oni izgledaju najsličnije moguće.
 
@@ -112,9 +112,9 @@ Poznat još i kao algoritam optimalnog poravnanja, Needleman-Wunschov algoritam 
 
 Cilj Needleman-Wunschovog algoritma jest pronaći optimalno poravnanje neka dva slijeda A i B, odnosno ono poravnanje koje u obzir uzima sve znakove oba slijeda i usto ima najviši broj bodova s obzirom na sva moguća poravnanja (dozvoljeno je postojanje više rješenja s istim brojem bodova).
 
-Označimo s \textit{n} duljinu slijeda A i s \textit{m} duljinu slijeda B. Za potrebe pronalaska optimalnog globalnog rješenja potrebno je alocirati dvodimenzionalnu matricu dimenzija $(n + 1) \times (m + 1)$. Nulti redak i stupac služe za inicijalizaciju matrice. Gledajući od indeksa 1, svaki redak matrice predstavlja znak u slijedu A, a svaki stupac predstavlja znak u slijedu B. Element matrice $F_{ij}$, gdje je $i$ indeks retka, a $j$ indeks stupca, predstavlja broj bodova za poravnanje prvih $i$ znakova slijeda A i prvih $j$ znakova slijeda B.
+Označimo s $n$ duljinu slijeda A i s $m$ duljinu slijeda B. Za potrebe pronalaska optimalnog globalnog rješenja potrebno je alocirati dvodimenzionalnu matricu dimenzija $(n + 1) \times (m + 1)$. Nulti redak i stupac služe za inicijalizaciju matrice. Gledajući od indeksa 1, svaki redak matrice predstavlja znak u slijedu A, a svaki stupac predstavlja znak u slijedu B. Element matrice $F_{ij}$, gdje je $i$ indeks retka, a $j$ indeks stupca, predstavlja broj bodova za poravnanje prvih $i$ znakova slijeda A i prvih $j$ znakova slijeda B.
 
-Kako bismo ocijenili poravnanje neka dva znaka, definiramo \textit{matricu sličnosti} \textbf{S} nad skupom dozvoljenih znakova $\Sigma$. Element matrice $S_{\sigma_{i}, \sigma_{j}}$ daje ocjenu poravnanja znaka $\sigma_{i}$ sa znakom $\sigma_{j}$. Dodatno, potrebno je ocijeniti umetanje praznina u bilo koji od dva slijeda. Za te potrebe definira se konstanta $d$ kojom se kažnjava svaka praznina.
+Kako bismo ocijenili poravnanje neka dva znaka, definiramo \textit{matricu sličnosti} \textbf{S} nad skupom dozvoljenih znakova $\Sigma$. Element matrice $S_{\sigma_{i}, \sigma_{j}}$ daje ocjenu poravnanja znaka $\sigma_{i}$ sa znakom $\sigma_{j}$. Dodatno, potrebno je ocijeniti umetanje praznina u bilo koji od dva slijeda. Za te potrebe definira se konstanta $d (d < 0)$ kojom se kažnjava svaka praznina.
 
 Pošto tražimo optimalno globalno poravnanje, želimo biti sigurni da će poravnanje krenuti od prvog znaka slijeda A i prvog znaka slijeda B. Zbog toga se postavljaju sljedeći početni uvjeti:
 \begin{center}
@@ -134,7 +134,7 @@ F_{i, j} = \max \left\{
 \end{equation}
 \end{center}
 
-Nakon što su izračunati svi elementi matrice, element \textit{F$_{nm}$} sadrži broj bodova optimalnog globalnog poravnanja.
+Nakon što su izračunati svi elementi matrice, element $F_{nm}$ sadrži broj bodova optimalnog globalnog poravnanja.
 
 \subsection{Primjer}
 \indent
@@ -262,7 +262,7 @@ Empirijski dokazana formula za ocjenjivanje procjepa jest parabola. Stoga se def
 
 S obzirom na ovu promjenu, potrebno je modificirati i sam algoritam, što nije trivijalno. Označimo s A slijed koji ćemo postaviti kao referentni za retke matrice, a s B slijed koji je referentan za stupce matrice \textbf{F}.
 
-Kako bismo uspješno pratili sve moguće situacije, potrebne su nam tri matrice: \textbf{N} (\emph{no gaps}), koja pokušava poravnati iduća dva elementa slijedova, \textbf{H} (\emph{horizontal gap}), koja pokušava idući element slijeda B poravnati s prazninom i \textbf{V}(\emph{vertical gap}), koja pokušava idući element slijeda A poravnati s prazninom.
+Kako bismo uspješno pratili sve moguće situacije, potrebne su nam tri matrice: \textbf{N} (\emph{no gaps - bez procjepa}), koja pokušava poravnati iduća dva elementa slijedova, \textbf{H} (\emph{horizontal gap - umetanje}), koja pokušava idući element slijeda B poravnati s prazninom i \textbf{V}(\emph{vertical gap - brisanje}), koja pokušava idući element slijeda A poravnati s prazninom.
 
 Početni uvjeti za sve tri matrice su:
 \begin{center}
@@ -305,7 +305,17 @@ N_{i,j} = \max \left\{
 \chapter{Predmetačni račun}
 \indent
 
-Problem predmetačnog računa definira se pomoću niza A = \{a$_{0}$, a$_{1}$, a$_{2}$, ..., a$_{n-1}$\} i općenitog binarnog operatora $\oplus$. Cilj je generirati niz B = \{0, 0 $\oplus$ a$_{0}$, 0 $\oplus$ a$_{0}$ $\oplus$ a$_{1}$, ..., 0 $\oplus$ a$_{0}$ $\oplus$ ... $\oplus$ a$_{n-2}$\}.
+Problem predmetačnog računa definira se pomoću niza A = \{a$_{0}$, a$_{1}$, a$_{2}$, ..., a$_{n-1}$\} i općenitog binarnog operatora $\oplus$. Cilj nam je generirati niz B. 
+
+Postoje dvije vrste predmetačnog računa: uključivi i isključivi.
+Kako bismo proveli uključivi predmetačni račun, svaki element $b_{i}$ niza B izračuna se tako da se primijeni operator $\oplus$ na sve elemente niza A od $a_{0}$ do $a_{i}$ ($i = 0...n-1$).
+Za razliku od uključivog, isključivi predmetačni račun za izračun elementa $b_{i}$ ne koristi element $a_{i}$. Odnosno, element $b_{i}$ niza B izračuna se tako da se na sve elemente niza A od $a_{0}$ do $a_{i - 1}$ ($i = 0...n-1$) primijeni operator $\oplus$. Ovakvim postupkom ostaje nepoznat element $b_{0}$. Na to mjesto doda se element koji je neutralan s obzirom na operator $\oplus$.
+
+Dakle, ovisno o vrsti predmetačnog računa koju želimo upotrijebiti, niz B može sastoji se od sljedećih elemenata:
+\begin{itemize}
+\item B = \{$0, 0 \oplus a_{0}, 0 \oplus a_{0} \oplus a_{1}, ..., 0 \oplus a_{0} \oplus ... \oplus a_{n-2}$\}
+\item B = \{$a_{0}, a_{0} \oplus a_{1}, a_{0} \oplus a_{1} \oplus a_{2}, ..., a_{0} \oplus a_{1} \oplus ... \oplus a_{n-1}$\}
+\end{itemize}
 
 Ovaj se problem pojavljuje često kao usko grlo u raznovrsnim problemima. Neki od njih su:
 \begin{itemize}
@@ -320,8 +330,7 @@ Ovaj se problem pojavljuje često kao usko grlo u raznovrsnim problemima. Neki o
 
 \section{Primjer}
 
-Za ilustraciju problema, pogledajmo slijedeći primjer:
-
+Za ilustraciju problema, razmotrimo slijedeći primjer:
 Zadan je niz A:
 \begin{center}
 \begin{tabular}{| r | r | r | r | r | r | r | r | r |}
@@ -333,7 +342,17 @@ vrijednost & 5 & 3 & -8 & 4 & 12 & 6 & -9 & 1\\
 \end{tabular}
 \end{center}
 
-Ako je binarni operator "+", tada je cilj dobiti niz B:
+Ako je binarni operator "+" i izvodimo uključivi predmetačni račun, tada je cilj dobiti sljedeći niz B:
+\begin{center}
+\begin{tabular}{| r | r | r | r | r | r | r | r | r |}
+\hline
+indeks & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7\\
+\hline
+vrijednost & 5 & 8 & 0 & 4 & 16 & 22 & 13 & 14\\
+\hline
+\end{tabular}
+\end{center}
+Ako pak za isti primjer izvedimo isključivi predmetačni račun, niz B izgleda ovako:
 \begin{center}
 \begin{tabular}{| r | r | r | r | r | r | r | r | r |}
 \hline
@@ -344,27 +363,14 @@ vrijednost & 0 & 5 & 8 & 0 & 4 & 16 & 22 & 13\\
 \end{tabular}
 \end{center}
 
-Gore navedeni primjer opisuje isključivi predmetačni račun. To znači da za element b$_{i}$ ($i = 0...n$) niza B u obzir uzimamo elemente niza A čiji je indeks manji od $i$, a b$_{0}$ popunimo neutralnim elementom (primjerice, za zbrajanje je to 0).
-
-Druga vrsta predmetačnog računa jest uključivi predmetačni račun, koji za izračun elementa b$_{i}$ koristi sve elemente od a$_{0}$ do a$_{i}$, uključivo. Za gore navedeni primjer, niz B bi izgledao ovako:
-\begin{center}
-\begin{tabular}{| r | r | r | r | r | r | r | r | r |}
-\hline
-indeks & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7\\
-\hline
-vrijednost & 5 & 8 & 0 & 4 & 16 & 22 & 13 & 14\\
-\hline
-\end{tabular}
-\end{center}
-
-Isključivi predmetačni račun se jednostavno generira iz uključivog tako da se svi elementi pomaknu za jedno mjesto udesno, a kao nulti element se doda neutralni element.
+Očito je da se isključivi predmetačni račun jednostavno generira iz uključivog tako da se svi elementi pomaknu za jedno mjesto udesno, a kao nulti element se doda neutralni element.
 
 
 \section{Algoritam}
 
 \indent
 
-Predmetačni račun je jedan od algoritama koji se čine inherentno sekvencijalnima, ali za koje postoji učinkovita paralelna implementacija.
+Predmetačni račun je jedan od algoritama koji se čine inherentno sekvencijalnima, ali za koje postoji učinkovita paralelna implementacija. Budući da se u ovom radu koristi isključivi predmetačni račun, razmotrit ćemo algoritam nad njime.
 
 \subsection{Sekvencijalni algoritam}
 
@@ -387,7 +393,7 @@ za svaki k od 1 do n-1
 \subsection{Paralelni algoritam}
 \indent
 
-Učinkovita paralelna implementacija predmetačnog računa temelji se na radu Blellocha\cite{blelloch} i koristi balansirano stablo. Ideja je izgraditi balansirano binarno stablo nad ulaznim podacima i zatim njegovim obilaskom do listova do korijena pa od korijena do listova napraviti račun.
+Učinkovita paralelna implementacija predmetačnog računa temelji se na radu Blellocha \cite{blelloch} i koristi balansirano stablo. Ideja je izgraditi balansirano binarno stablo nad ulaznim podacima i zatim njegovim obilaskom do listova do korijena pa od korijena do listova napraviti račun.
 
 Binarno stablo s $n$ listova ima dubinu $d = log_{2}n$, a svaka dubina ima $2^{d}$ čvorova. Ako izvodimo jedan izračun po čvoru, u jednom obilasku stabla izvodimo $O(n)$ izračuna. Ovo binarno stablo nije fizički implementirano, nego je koncept koji koristimo kako bismo odredili što je zadatak svake dretve u obilasku stabla, a svi izračuni izvode se nad ulaznim nizom podataka.
 
@@ -448,7 +454,7 @@ za svaki d od log$_{2}$n - 1 do 0:
 \chapter{CUDA tehnologija}
 \indent
 
-Grafičke kartice su prvotno dizajnirane kao grafički ubrzivači i podržavale su cjevovode točno određenih funkcija. No, u 1990-im godinama doživjele su dramatičan razvoj i postajale sve više programabilne. NVIDIA, tvrtka koja je i skovala termin GPU (\textit{graphics processing unit} - \textit{grafička procesna jedinica}), svoj je prvi GPU proizvela 1999. Od tad su moć te tehnologije, osim proizvođača računalnih igara i umjetnika, prepoznali i mnogi istraživači te ju počeli koristiti za svoje potrebe.
+Grafičke kartice su prvotno dizajnirane kao grafički ubrzivači i podržavale su cjevovode točno određenih funkcija. No, u 1990-im godinama doživjele su dramatičan razvoj i postajale sve više programabilne. NVIDIA, tvrtka koja je i skovala termin GPU (\emph{graphics processing unit} - \emph{grafička procesna jedinica}), svoj je prvi GPU proizvela 1999. Od tad su moć te tehnologije, osim proizvođača računalnih igara i umjetnika, prepoznali i mnogi istraživači te ju počeli koristiti za svoje potrebe.
 
 Međutim, u to doba je bilo potrebno "prevariti" grafičku karticu koju se htjelo iskoristiti, to jest, trebalo podatke pretočiti u probleme koji se mogu prikazati trokutima i poligonima. Kako bi se to izbjeglo, razvio se GPGPU (\textit{general purpose graphics processing unit} - \textit{grafička procesna jedinica opće namjene}).
 
@@ -456,7 +462,7 @@ Uskoro su se pojavile i prilagodbe općih programskih jezika za novonastalu tehn
 
 \textit{CUDA} tehnologija (punog naziva \textit{Compute Unified Device Architecture} - \textit{računski ujedinjena arhitektura uređaja}) je programski model i platforma za paralelno programiranje koju je razvila tvrtka NVIDIA i implementirala na svojim grafičkim procesnim jedinicama.\cite{cuda}
 
-Prva verzija CUDA-inog SDK-a (engl. \textit{software development kit} - oprema za razvoj programske podrške) izdana je 15. veljače 2007. Ona je omogućila korištenje resursa grafičkih kartica jedino u programskom jeziku C. Od tada do danas izdane su još dvije velike iteracije i nekoliko manjih te danas možemo koristiti i podskup jezika C++.\cite{rahlezavrsni}
+Prva verzija CUDA-inog SDK-a (engl. \textit{software development kit} - oprema za razvoj programske podrške) izdana je 15. veljače 2007. Ona je omogućila korištenje resursa grafičkih kartica jedino u programskom jeziku C. Od tada do danas izdane su još dvije velike iteracije i nekoliko manjih te danas možemo koristiti i podskup jezika C++ \cite{rahlezavrsni}.
 
 Za shvaćanje načina rada grafičke procesne jedinice s \emph{CUDA} arhitekturom, moramo razumjeti sljedeće pojmove\cite{rahlezavrsni}:
 \begin{itemize}

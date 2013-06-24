@@ -14,6 +14,7 @@ typedef struct {
 
 typedef struct {
 	char reset;
+	int grid_size;
 	int block_size;
 	int thread_chunk;
 } configuration;
