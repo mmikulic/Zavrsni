@@ -1,8 +1,8 @@
 #ifndef UTILS_CUH
 #define UTILS_CUH
 
-template< typename T > struct MaxOperator {
-	__device__ __host__ MaxOperator() {}
+template< typename T > struct maxop {
+	__device__ __host__ maxop() {}
 	__device__ __host__ T operator() (const T &a, const T &b) const {
 	    return a < b ? b : a;
 	}
@@ -39,4 +39,13 @@ void safeAPIcall(cudaError_t err, int line) {
 	}
 }
 
+void cudaSetAndCopyToDevice(void **dest, void *src, int size) {
+	cudaMalloc(dest, size);
+	cudaMemcpy(dest, src, size, cudaMemcpyHostToDevice);
+}
+
+void cudaCopyToHostAndFree(void *dest, void *src, int size) {
+	cudaMemcpy(dest, src, size, cudaMemcpyDeviceToHost);
+	cudaFree(src);
+}
 #endif

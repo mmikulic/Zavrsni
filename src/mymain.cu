@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 		strcat(horizontal, get_protein(argv[i], &h_len, config.reset));
 	}
 	char *dev_h;//dev
-	cudaSetAndCopyToDevice(&dev_h, horizontal, h_len * sizeof(char));
+	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, h_len * sizeof(char));
 	
 	int row_len = h_len + 1;
 	config.grid_size = 1;
@@ -109,20 +109,20 @@ int main(int argc, char **argv) {
 	init(&matRow[0], 0, row_len);
 	init(&matRow[1], 0, row_len);
 	
-	cudaSetAndCopyToDevice(&devMatRow[0], matRow[0], row_len * sizeof(data));
-	cudaSetAndCopyToDevice(&devMatRow[1], matRow[1], row_len * sizeof(data));
+	cudaSetAndCopyToDevice((void **)&devMatRow[0], matRow[0], row_len * sizeof(data));
+	cudaSetAndCopyToDevice((void **)&devMatRow[1], matRow[1], row_len * sizeof(data));
 	
 	int curr = 0;
 	int total_max = -1;
 	int *dev_total_max;//dev
 	
 	gap penalty;
-	penalty.open = 5;
+	penalty.open = 12;
 	penalty.extension = 2;
 	gap *dev_penalty;
 	
-	cudaSetAndCopyToDevice(&dev_penalty, &penalty, sizeof(gap));
-	cudaSetAndCopyToDevice(&dev_total_max, &total_max, sizeof(int));
+	cudaSetAndCopyToDevice((void **)&dev_penalty, &penalty, sizeof(gap));
+	cudaSetAndCopyToDevice((void **)&dev_total_max, &total_max, sizeof(int));
 	
 	clock_t start_time = clock();
 	for (int i = 0; i < v_len; ++i) {
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 		curr ^= 1;
 	}
 	clock_t end_time = clock();
-	printf("Time: %d ticks; %.4gs\n", end_time-start_time, (end_time-start_time)/(double)CLK_TCK)
+	printf("Time: %d ticks\n", end_time-start_time);
 	cudaCopyToHostAndFree(&total_max, dev_total_max, sizeof(int));
 	printf("max local alignment: %d\n", total_max);
 	
