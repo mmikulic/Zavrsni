@@ -7,7 +7,7 @@
 #include "structs.h"
 #include "find_score.cuh"
 
-char *get_protein(char *filename, int *s, char reset) {
+char *get_protein(char *filename, int *s, char reset, int *seqcount) {
 	FILE *f = fopen(filename, "r");
 	char c;
 	char *protein;
@@ -17,9 +17,10 @@ char *get_protein(char *filename, int *s, char reset) {
 	rewind(f);
 	size = 0;
 	while(fscanf(f, "%c", &c) != EOF) {
-		printf("size = %d, reading c = '%c'\n", size, c);
+		//printf("size = %d, reading c = '%c'\n", size, c);
 		if (c == '>') {
 			ignore = 1;
+			++(*seqcount);
 			if (size > 0)
 				++size;
 		}
@@ -85,49 +86,63 @@ int main(int argc, char **argv) {
 	configuration config;
 	config.reset = '#';
 	
-	int v_len = 0;	
-	char *vertical = get_protein(argv[1], &v_len, config.reset);
+	int v_len = 0;
+	int v_seq_count = 0;
+	char *vertical = get_protein(argv[1], &v_len, config.reset, &v_seq_count);
+	if (v_seq_count > 1)
+		exitWithMsg("More than one vertical sequence!", -1);
 	
 	int h_len = 0;
-	char *horizontal = get_protein(argv[2], &h_len, config.reset);
+	int seq_count = 0;
+	char *horizontal = get_protein(argv[2], &h_len, config.reset, seq_count);
 	for (int i = 3; i < argc; ++i) {
 		strcat(horizontal, &(config.reset));
 		++h_len;
-		strcat(horizontal, get_protein(argv[i], &h_len, config.reset));
+		strcat(horizontal, get_protein(argv[i], &h_len, config.reset, &seq_count));
 	}
 	printf("Vertical: %s\n", vertical);
 	printf("Horizontal: %s\n", horizontal);
 	
-	
-	char *dev_h;//dev
-	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, h_len * sizeof(char), __LINE__);
+	int *seq_last_idx = (int *)malloc(seq_count * sizeof(int));
+	int seq_it = 0;
+	for (int i = 0; i < h_len; ++i) {
+		if (*(horizontal + i) == '#') {			
+			*(seq_last_idx + seq_it) = i - 1;
+			++seq_it;
+		}
+	}
 	
 	int row_len = h_len + 1;
 	config.grid_size = 1;
 	config.block_size = min(512, (row_len + 9) / 10);
 	config.thread_chunk = (row_len + config.block_size - 1) / config.block_size;
 	
-	data *matRow[2];//TODO: set up
-	data *devMatRow[2];//TODO: set up
-	
+	data *matRow[2];
 	init(&matRow[0], 0, row_len);
 	init(&matRow[1], 0, row_len);
 	
-	cudaSetAndCopyToDevice((void **)&devMatRow[0], matRow[0], row_len * sizeof(data), __LINE__);
-	cudaSetAndCopyToDevice((void **)&devMatRow[1], matRow[1], row_len * sizeof(data), __LINE__);
-	
-	int curr = 0;
 	int total_max = -1;
-	int *dev_total_max;//dev
-	
 	gap penalty;
 	penalty.open = 12;
 	penalty.extension = 2;
-	gap *dev_penalty;
 	
+	//dev variables
+	gap *dev_penalty;
+	int *dev_total_max;
+	int *dev_sec_last_idx;
+	char *dev_h
+	data *devMatRow[2];
+	seg_val *dev_auxiliary;
+	
+	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, config.block_size * sizeof(seg_val)), __LINE__);
+	cudaSetAndCopyToDevice((void **)&devMatRow[0], matRow[0], row_len * sizeof(data), __LINE__);
+	cudaSetAndCopyToDevice((void **)&devMatRow[1], matRow[1], row_len * sizeof(data), __LINE__);
+	cudaSetAndCopyToDevice((void **)&dev_sec_last_idx, seq_last_idx, seq_count * sizeof(int), __LINE__);
+	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, h_len * sizeof(char), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_penalty, &penalty, sizeof(gap), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_total_max, &total_max, sizeof(int), __LINE__);
 	
+	int curr = 0;	
 	clock_t start_time = clock();
 	for (int i = 0; i < v_len; ++i) {
 		find_score<<<config.grid_size, config.block_size>>>(
@@ -138,7 +153,10 @@ int main(int argc, char **argv) {
 			devMatRow[curr ^ 1],
 			devMatRow[curr],
 			config,
-			dev_total_max
+			dev_total_max,
+			dev_seq_last_idx,
+			seq_count,
+			dev_auxiliary
 		);
 		curr ^= 1;
 	}
@@ -147,10 +165,11 @@ int main(int argc, char **argv) {
 	cudaCopyToHostAndFree(&total_max, dev_total_max, sizeof(int), __LINE__);
 	printf("max local alignment: %d\n", total_max);
 	
-	cudaFree(devMatRow[0]);
-	cudaFree(devMatRow[1]);
-	cudaFree(dev_penalty);
-	cudaFree(dev_h);
+	safeAPIcall(cudaFree(devMatRow[0]), __LINE__);
+	safeAPIcall(cudaFree(devMatRow[1]), __LINE__);
+	safeAPIcall(cudaFree(dev_penalty), __LINE__);
+	safeAPIcall(cudaFree(dev_h), __LINE__);
+	safeAPIcall(cudaFree(dev_seq_last_idx), __LINE__);
 		
 	return 0;
 }

@@ -21,13 +21,8 @@ typedef struct {
 
 typedef struct {
 	int val;
-	int idx;
-} vector_element;
-
-typedef struct {
-	vector_element el;
-	int row;
-} matrix_element;
+	int seg_idx;
+} seg_val;
 
 
 #endif

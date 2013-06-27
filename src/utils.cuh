@@ -20,12 +20,12 @@ __device__ __host__ int closestPow2(int n) {
 		num = num << 1;
 	return num;
 }
-
-__device__ __host__ bool operator< (const vector_element &a, const vector_element &b) const {
-	if (index != other.index) return index > other.index;
-	return value < other.value;
-}
 */
+__device__ __host__ bool operator< (const seg_val &a, const seg_val &b) const {
+	if (a.seg_idx != b.seg_idx) return a.seg_idx > b.seg_idx;
+	return a.val < b.val;
+}
+
 void exitWithMsg(const char *msg, int exitCode) {
 	printf("ERROR\n");
 	printf("%s\n\n", msg);
@@ -48,5 +48,22 @@ void cudaSetAndCopyToDevice(void **dest, void *src, int size, int line) {
 void cudaCopyToHostAndFree(void *dest, void *src, int size, int line) {
 	safeAPIcall(cudaMemcpy(dest, src, size, cudaMemcpyDeviceToHost), line);
 	safeAPIcall(cudaFree(src), line);
+}
+
+__device__ int placement(int *array, int size, int element) {
+	int middle, bottom, top;
+	if (size == 1)
+		return 0;
+	
+	bottom = 0;
+	top = size - 1;
+	while(bottom < top) {
+		middle = (top + bottom) >> 1;
+		if (*(array + middle) < element)
+			bottom = middle + 1;
+		if (*(array + middle) >= element)
+			top = middle;
+	}
+	return top;
 }
 #endif
