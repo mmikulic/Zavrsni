@@ -7,6 +7,7 @@ template< typename T > struct maxop {
 	    return a < b ? b : a;
 	}
 };
+
 /*
 __device__ __host__ int log2(int n) {
 	int pow = 0;

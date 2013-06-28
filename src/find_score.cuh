@@ -69,7 +69,7 @@ __global__ void find_score (gap *penalty,
 	__syncthreads();
 	typedef cub::BlockReduce<seg_val, THREADS> BlockReduce;
 	__shared__ typename BlockReduce::SmemStorage reduce_storage;
-	max_scr.val = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
+	max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
 	//dodat reduce izmedu blokova
 	if (id == 0 && *total_max < max_scr.val)
 		*total_max = max_scr.val;
@@ -99,14 +99,38 @@ __global__ void find_score (gap *penalty,
 	identity.seg_idx = 0;
 	typedef cub::BlockScan<seg_val, THREADS> BlockScan;
 	__shared__ typename BlockScan::SmemStorage scan_storage;
-	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
 	
+	__syncthreads();
+	seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
+	if (threadIdx.x == 0)
+		*(aux + blockIdx.x) = block_max;
+	if (blockIdx.x == 0) {
+		int proc_chunk = (config.grid_size + config.block_size - 1) / config.block_size;
+		int proc_start = threadIdx.x * proc_chunk;
+		int proc_limit = min(proc_start + proc_chunk, config.grid_size);
+		seg_val proc_max;
+		proc_max.val = 0;
+		proc_max.seg_idx = 0;
+		for (int i = proc_start; i < proc_limit; ++i) {
+			if (proc_max < *(aux + i))
+				proc_max = *(aux + i);
+		}
+		BlockScan::ExclusiveScan(scan_storage, proc_max, proc_max, identity, maxop<seg_val>());
+		
+		if (*(aux + proc_start) < proc_max)
+			*(aux + proc_start) = proc_max;
+		for (int i = proc_start + 1; i < proc_limit; ++i)
+			*(aux + i) = max(*(aux + i), *(aux + i - 1));
+	}
 	
+	__syncthreads();
+	if (threadIdx.x == 0)
+		h_max = max(*(aux + blockIdx.x), h_max);
 	typedef cub::BlockScan<seg_val, THREADS> BlockScan;
 	__shared__ typename BlockScan::SmemStorage scan_storage;
 	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
 
-	(*(output + start)).H = max(0, max_scr.val - it * penalty->extension);
+	(*(output + start)).H = max(0, h_max.val - it * penalty->extension);
 	for (it = start + 1; it < limit; ++it) {
 		if (*(horizontal + it - 1) == config.reset)
 			(*(output + it)).H = INIT_VAL;
