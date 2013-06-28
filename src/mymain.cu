@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 	data *devMatRow[2];
 	seg_val *dev_auxiliary;
 	
-	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, config.block_size * sizeof(seg_val)), __LINE__);
+	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, config.grid_size * sizeof(seg_val)), __LINE__);
 	cudaSetAndCopyToDevice((void **)&devMatRow[0], matRow[0], row_len * sizeof(data), __LINE__);
 	cudaSetAndCopyToDevice((void **)&devMatRow[1], matRow[1], row_len * sizeof(data), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_seq_last_idx, seq_last_idx, seq_count * sizeof(int), __LINE__);
@@ -203,15 +203,17 @@ int main(int argc, char **argv) {
 		curr ^= 1;
 	}
 	clock_t end_time = clock();
-	printf("Time: %d ticks\n", end_time-start_time);
+	printf("Time: %d ticks\n", end_time - start_time);
 	cudaCopyToHostAndFree(&total_max, dev_total_max, sizeof(int), __LINE__);
 	printf("max local alignment: %d\n", total_max);
 	
+	safeAPIcall(cudaFree(dev_auxiliary), __LINE__);
 	safeAPIcall(cudaFree(devMatRow[0]), __LINE__);
 	safeAPIcall(cudaFree(devMatRow[1]), __LINE__);
-	safeAPIcall(cudaFree(dev_penalty), __LINE__);
-	safeAPIcall(cudaFree(dev_h), __LINE__);
 	safeAPIcall(cudaFree(dev_seq_last_idx), __LINE__);
-		
+	safeAPIcall(cudaFree(dev_h), __LINE__);
+	safeAPIcall(cudaFree(dev_penalty), __LINE__);
+	
+	
 	return 0;
 }
