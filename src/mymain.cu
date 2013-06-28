@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
 	}
 	printf("Vertical:\n");
 	print(vertical, v_len);
-	printf("Horizontal:n");
+	printf("Horizontal:\n");
 	print(horizontal, h_len);
 	
 	int *seq_last_idx = (int *)malloc(seq_count * sizeof(int));
@@ -181,6 +181,8 @@ int main(int argc, char **argv) {
 	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, h_len * sizeof(char), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_penalty, &penalty, sizeof(gap), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_total_max, &total_max, sizeof(int), __LINE__);
+	
+	printf("parameters: blocks: %d, threads: %d, thread_chunk: %d\n", config.grid_size, config.block_size, config.thread_chunk);
 	
 	int curr = 0;	
 	clock_t start_time = clock();
