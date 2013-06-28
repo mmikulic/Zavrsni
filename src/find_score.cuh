@@ -69,7 +69,21 @@ __global__ void find_score (gap *penalty,
 	typedef cub::BlockReduce<seg_val, THREADS> BlockReduce;
 	__shared__ typename BlockReduce::SmemStorage reduce_storage;
 	max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
-	//dodat reduce izmedu blokova
+	        //device reduce faza za N i V
+	__syncthreads();
+	max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
+	int curr_size = config.grid_size;
+	while (curr_size > config.block_size) {
+		if (threadIdx.x == 0)
+				*(aux + blockIdx.x) = max_scr;
+				curr_size = (curr_size + config.block_size - 1) / config.block_size;
+		__syncthreads();
+		if (id - threadIdx.x < curr_size) {
+				max_scr = (id < curr_size ? *(aux + id), 0);
+				max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
+		}
+	}
+
 	if (id == 0 && *total_max < max_scr.val)
 		*total_max = max_scr.val;
 	
