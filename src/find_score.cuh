@@ -2,7 +2,7 @@
 #define FIND_SCORE_BLOCK_CUH
 
 #include "cuda.h"
-#include "structs.h"
+#include "structs.cuh"
 #include "cub/cub/cub.cuh"
 
 #define INIT_VAL 0
@@ -26,13 +26,12 @@ __global__ void find_score (gap *penalty,
 	int seq_idx = placement(seq_last_idx, seq_count, start);
 	int it = start;
 
-	//int threads = config.block_size;
 	seg_val max_scr;
 	seg_val h_max;
 	max_scr.val = INIT_VAL;
-	max_scr.idx = -1;
+	max_scr.seg_idx = 0;
 	h_max.val = INIT_VAL;
-	h_max.seq = -1;
+	h_max.seg_idx = 0;
 	
 	if (it == 0) {
 		(*(output + it)).N = INIT_VAL;
@@ -74,15 +73,13 @@ __global__ void find_score (gap *penalty,
 	if (id == 0 && *total_max < max_scr.val)
 		*total_max = max_scr.val;
 	
-	__syncthreads();	
-	//H
+	__syncthreads();
 	for (it = start + (it == 0 ? 1 : 0); it < limit; ++it) {
 		(*(output + it)).H = max(0, 
 								max((*(output + it - 1)).N, 
 									(*(output + it - 1)).V
 								   ) 
-								- penalty->open + it * penalty->extension
-							   );//check
+								- penalty->open + it * penalty->extension);
 		if ((*(output + it)).H > h_max.val) {
 			h_max.val = (*(output + it)).H;
 			h_max.seg_idx = seq_idx;
@@ -100,10 +97,10 @@ __global__ void find_score (gap *penalty,
 	typedef cub::BlockScan<seg_val, THREADS> BlockScan;
 	__shared__ typename BlockScan::SmemStorage scan_storage;
 	
-	__syncthreads();
 	seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
 	if (threadIdx.x == 0)
 		*(aux + blockIdx.x) = block_max;
+	__syncthreads();
 	if (blockIdx.x == 0) {
 		int proc_chunk = (config.grid_size + config.block_size - 1) / config.block_size;
 		int proc_start = threadIdx.x * proc_chunk;
@@ -120,14 +117,13 @@ __global__ void find_score (gap *penalty,
 		if (*(aux + proc_start) < proc_max)
 			*(aux + proc_start) = proc_max;
 		for (int i = proc_start + 1; i < proc_limit; ++i)
-			*(aux + i) = max(*(aux + i), *(aux + i - 1));
+			*(aux + i) = mymax<seg_val>(*(aux + i), *(aux + i - 1));
 	}
 	
 	__syncthreads();
 	if (threadIdx.x == 0)
-		h_max = max(*(aux + blockIdx.x), h_max);
+		h_max = mymax<seg_val>(*(aux + blockIdx.x), h_max);
 	typedef cub::BlockScan<seg_val, THREADS> BlockScan;
-	__shared__ typename BlockScan::SmemStorage scan_storage;
 	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
 
 	(*(output + start)).H = max(0, h_max.val - it * penalty->extension);

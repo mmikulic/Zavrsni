@@ -1,5 +1,7 @@
-#ifndef UTILS_CUH
-#define UTILS_CUH
+#ifndef MY_UTILS_CUH
+#define MY_UTILS_CUH
+
+#include"structs.cuh"
 
 template< typename T > struct maxop {
 	__device__ __host__ maxop() {}
@@ -22,9 +24,9 @@ __device__ __host__ int closestPow2(int n) {
 	return num;
 }
 */
-__device__ __host__ bool operator< (const seg_val &a, const seg_val &b) const {
-	if (a.seg_idx != b.seg_idx) return a.seg_idx > b.seg_idx;
-	return a.val < b.val;
+
+template < typename T > __device__ __host__ T mymax(T &a, T &b) {
+	return a < b ? b : a;
 }
 
 void exitWithMsg(const char *msg, int exitCode) {

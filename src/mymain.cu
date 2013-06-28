@@ -3,11 +3,11 @@
 #include<string.h>
 
 #include "cuda.h"
+#include "structs.cuh"
 #include "utils.cuh"
-#include "structs.h"
 #include "find_score.cuh"
 
-char *get_protein(char *filename, int *s, char reset, int *seqcount) {
+char *get_protein(char *filename, char reset, int *seqcount) {
 	FILE *f = fopen(filename, "r");
 	char c;
 	char *protein;
@@ -29,9 +29,6 @@ char *get_protein(char *filename, int *s, char reset, int *seqcount) {
 		else if (!ignore && c >= 'A' && c <= 'Z')
 			++size;
 	}
-	*s += size;
-	printf("total size: %d\n\n", *s);
-	fflush(stdout);
 	
 	protein = (char *)malloc((size + 1) * sizeof(char));
 	it = 0;
@@ -72,6 +69,38 @@ void init(data **mat, int val, int size) {
 	}
 }
 
+int count(char *filename) {
+	FILE *f = fopen(filename, "r");
+	char c;
+	int size = 0;
+	int ignore = 0;
+	rewind(f);
+	while(fscanf(f, "%c", &c) != EOF) {
+		//printf("size = %d, reading c = '%c'\n", size, c);
+		if (c == '>') {
+			ignore = 1;
+			if (size > 0)
+				++size;
+		}
+		else if (ignore && c == '\n')
+			ignore = 0;
+		else if (!ignore && c >= 'A' && c <= 'Z')
+			++size;
+	}
+	fclose(f);
+	return size;
+}
+
+void print(char *protein, int size) {
+	int i;
+	for (i = 0; i < size; ++i) {
+		if (!(i % 50))
+			printf("\n");
+		printf("%c", protein[i]);
+	}
+	printf("\n");
+}
+
 int main(int argc, char **argv) {
 	//variableinit
 	
@@ -86,22 +115,33 @@ int main(int argc, char **argv) {
 	configuration config;
 	config.reset = '#';
 	
-	int v_len = 0;
+	int v_len = count(argv[1]);
 	int v_seq_count = 0;
-	char *vertical = get_protein(argv[1], &v_len, config.reset, &v_seq_count);
+	char *vertical = (char *)malloc((v_len + 1) * sizeof(char));
+	memset(vertical, 0, (v_len + 1) * sizeof(char));
+	strcat(vertical, get_protein(argv[1], config.reset, &v_seq_count));
 	if (v_seq_count > 1)
 		exitWithMsg("More than one vertical sequence!", -1);
 	
-	int h_len = 0;
-	int seq_count = 0;
-	char *horizontal = get_protein(argv[2], &h_len, config.reset, seq_count);
+	int h_len = count(argv[2]);
 	for (int i = 3; i < argc; ++i) {
-		strcat(horizontal, &(config.reset));
 		++h_len;
-		strcat(horizontal, get_protein(argv[i], &h_len, config.reset, &seq_count));
+		h_len += count(argv[i]);
 	}
-	printf("Vertical: %s\n", vertical);
-	printf("Horizontal: %s\n", horizontal);
+	char *horizontal = (char *)malloc((h_len + 1) * sizeof(char));
+	memset(horizontal, 0, (h_len + 1) * sizeof(char));
+	
+	int seq_count = 0;
+	strcat(horizontal, get_protein(argv[2], config.reset, &seq_count));
+	char *reset_str = "#";
+	for (int i = 3; i < argc; ++i) {
+		strcat(horizontal, reset_str);
+		strcat(horizontal, get_protein(argv[i], config.reset, &seq_count));
+	}
+	printf("Vertical:\n");
+	print(vertical, v_len);
+	printf("Horizontal:n");
+	print(horizontal, h_len);
 	
 	int *seq_last_idx = (int *)malloc(seq_count * sizeof(int));
 	int seq_it = 0;
@@ -113,9 +153,9 @@ int main(int argc, char **argv) {
 	}
 	
 	int row_len = h_len + 1;
-	config.grid_size = 1;
-	config.block_size = min(512, (row_len + 9) / 10);
-	config.thread_chunk = (row_len + config.block_size - 1) / config.block_size;
+	config.block_size = THREADS;
+	config.thread_chunk = (row_len + 0.01 * row_len - 1) / (0.01 * row_len);
+	config.grid_size = (row_len + config.block_size * config.thread_chunk - 1) / (config.block_size * config.thread_chunk);
 	
 	data *matRow[2];
 	init(&matRow[0], 0, row_len);
@@ -129,15 +169,15 @@ int main(int argc, char **argv) {
 	//dev variables
 	gap *dev_penalty;
 	int *dev_total_max;
-	int *dev_sec_last_idx;
-	char *dev_h
+	int *dev_seq_last_idx;
+	char *dev_h;
 	data *devMatRow[2];
 	seg_val *dev_auxiliary;
 	
 	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, config.block_size * sizeof(seg_val)), __LINE__);
 	cudaSetAndCopyToDevice((void **)&devMatRow[0], matRow[0], row_len * sizeof(data), __LINE__);
 	cudaSetAndCopyToDevice((void **)&devMatRow[1], matRow[1], row_len * sizeof(data), __LINE__);
-	cudaSetAndCopyToDevice((void **)&dev_sec_last_idx, seq_last_idx, seq_count * sizeof(int), __LINE__);
+	cudaSetAndCopyToDevice((void **)&dev_seq_last_idx, seq_last_idx, seq_count * sizeof(int), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, h_len * sizeof(char), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_penalty, &penalty, sizeof(gap), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_total_max, &total_max, sizeof(int), __LINE__);
