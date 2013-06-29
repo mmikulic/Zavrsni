@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<time.h>
+#include<ctype.h>
 
 #include "cuda.h"
 #include "structs.cuh"
@@ -27,7 +28,7 @@ char *get_protein(char *filename, char reset, int *seqcount) {
 		}
 		else if (ignore && c == '\n')
 			ignore = 0;
-		else if (!ignore && c >= 'A' && c <= 'Z')
+		else if (!ignore && isalpha(c))
 			++size;
 	}
 	
@@ -44,13 +45,13 @@ char *get_protein(char *filename, char reset, int *seqcount) {
 		}
 		else if (ignore && c == '\n')
 			ignore = 0;
-		else if (!ignore && c >= 'A' && c <= 'Z') {
+		else if (!ignore && isalpha(c)) {
 			if (it >= size) {
 				printf("char * size not enough!\n");
 				fflush(stdout);
 				return NULL;
 			}
-			*(protein + it) = c;
+			*(protein + it) = (char)toupper(c);
 			++it;
 		}
 	}
@@ -85,7 +86,7 @@ int count(char *filename) {
 		}
 		else if (ignore && c == '\n')
 			ignore = 0;
-		else if (!ignore && c >= 'A' && c <= 'Z')
+		else if (!ignore && isalpha(c))
 			++size;
 	}
 	fclose(f);
@@ -140,9 +141,9 @@ int main(int argc, char **argv) {
 		strcat(horizontal, get_protein(argv[i], config.reset, &seq_count));
 	}
 	printf("Vertical(%d):\n", v_len);
-	print(vertical, v_len);
+	//	print(vertical, v_len);
 	printf("Horizontal(%d):\n", h_len);
-	print(horizontal, h_len);
+	//	print(horizontal, h_len);
 	
 	int *seq_last_idx = (int *)malloc(seq_count * sizeof(int));
 	int seq_it = 0;
@@ -187,7 +188,10 @@ int main(int argc, char **argv) {
 	printf("parameters: blocks: %d, threads: %d, thread_chunk: %d\n", config.grid_size, config.block_size, config.thread_chunk);
 	
 	int curr = 0;	
-	clock_t start_time = clock();
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start, 0);
 	for (int i = 0; i < v_len; ++i) {
 		find_score<<<config.grid_size, config.block_size>>>(
 			dev_penalty,
@@ -204,8 +208,14 @@ int main(int argc, char **argv) {
 		);
 		curr ^= 1;
 	}
-	clock_t end_time = clock();
-	printf("Time: %d ticks, %lf s\n", end_time - start_time, double(end_time - start_time) / CLOCKS_PER_SEC);
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	float exe_time;
+	cudaEventElapsedTime(&exe_time, start, stop);
+	printf("Time: %f ms, %f s\n", exe_time, exe_time * 0.001);
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+
 	cudaCopyToHostAndFree(&total_max, dev_total_max, sizeof(int), __LINE__);
 	printf("max local alignment: %d\n", total_max);
 	

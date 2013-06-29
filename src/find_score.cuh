@@ -6,7 +6,7 @@
 #include "cub/cub/cub.cuh"
 
 #define INIT_VAL 0
-#define THREADS 128
+#define THREADS 1024
 
 __global__ void find_score (gap *penalty, 
 					   	   char *horizontal, 
