@@ -6,8 +6,7 @@
 #include "cub/cub/cub.cuh"
 
 #define INIT_VAL 0
-#define NEG_INF -(1 << 15)
-#define THREADS 512
+#define THREADS 128
 
 __global__ void find_score (gap *penalty, 
 					   	   char *horizontal, 
@@ -39,34 +38,34 @@ __global__ void find_score (gap *penalty,
 	identity.seg_idx = 0;
 	
 	if (it == 0) {
-		(*(output + it)).N = INIT_VAL;
-		(*(output + it)).H = INIT_VAL;
-		(*(output + it)).V = INIT_VAL;
+		(output + it)->N = INIT_VAL;
+		(output + it)->H = INIT_VAL;
+		(output + it)->V = INIT_VAL;
 		++it;
 	}
 	
 	for (; it < limit; ++it) {
 		if (*(horizontal + it - 1) == config.reset) {
-			(*(output + it)).N = INIT_VAL;
-			(*(output + it)).H = INIT_VAL;
-			(*(output + it)).V = INIT_VAL;
+			(output + it)->N = INIT_VAL;
+			(output + it)->H = INIT_VAL;
+			(output + it)->V = INIT_VAL;
 			++seq_idx;
 		} else {
-			(*(output + it)).N = max(0, (*(horizontal + it - 1) == vertical) + 
-										max((*(input + it - 1)).N,
-											max((*(input + it - 1)).H, 
-												(*(input + it - 1)).V
+			(output + it)->N = max(0, ((*(horizontal + it - 1)) == vertical) + 
+										max((input + it - 1)->N,
+											max((input + it - 1)->H, 
+												(input + it - 1)->V
 											   )
 									   	   )
 								   );
-			(*(output + it)).V = max(max((*(input + it)).N - penalty->open, 0),
-									max((*(input + it)).H - penalty->open, 
-										(*(input + it)).V - penalty->extension
+			(output + it)->V = max(max((input + it)->N - penalty->open, 0),
+									max((input + it)->H - penalty->open, 
+										(input + it)->V - penalty->extension
 									   )
 								   );
 		}
-		if ((*(output + it)).N > max_scr.val)
-			max_scr.val = (*(output + it)).N;
+		if ((output + it)->N > max_scr.val)
+			max_scr.val = (output + it)->N;
 	}
 	
 	//reduce faza za N i V
@@ -74,33 +73,38 @@ __global__ void find_score (gap *penalty,
 	typedef cub::BlockReduce<seg_val, THREADS> BlockReduce;
 	__shared__ typename BlockReduce::SmemStorage reduce_storage;
 	max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
-	        //device reduce faza za N i V
+
+	//device reduce faza za N i V
 	//__syncthreads();
-	//max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
 	//int curr_size = config.grid_size;
-	//while (curr_size > config.block_size) {
-	//	if (threadIdx.x == 0)
-	//			*(aux + blockIdx.x) = max_scr;
-	//			curr_size = (curr_size + config.block_size - 1) / config.block_size;
+	//while (curr_size > 1) {
+	//	if (blockIdx.x < curr_size && threadIdx.x == 0) {
+	//		//printf("block: %d, thread: %d max = %d\n", blockIdx.x, threadIdx.x, max_scr.val);
+	//		(*(aux + blockIdx.x)) = max_scr;
+	//		//printf("\tstored: aux[%d] = %d\n", blockIdx.x, (*(aux + blockIdx.x)).val);
+	//	}
+	//	__syncthreads();
+	//	max_scr = (id < curr_size ? (*(aux + id)) : identity);
+	//	curr_size = (curr_size + config.block_size - 1) / config.block_size;
 	//	__syncthreads();
 	//	if (id - threadIdx.x < curr_size) {
-	//			max_scr = (id < curr_size ? *(aux + id) : identity);
-	//			max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
+	//		//printf("\t id: %d new max = %d\n",id, max_scr.val);
+	//		max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
 	//	}
 	//}
+	if (id == 0 && (*total_max) < max_scr.val)
+		(*total_max) = max_scr.val;
 
-	if (id == 0 && *total_max < max_scr.val)
-		*total_max = max_scr.val;
-	
+	//H
 	__syncthreads();
-	for (it = start + (it == 0 ? 1 : 0); it < limit; ++it) {
-		(*(output + it)).H = max(0, 
-								max((*(output + it - 1)).N, 
-									(*(output + it - 1)).V
+	for (it = start + (start == 0 ? 1 : 0); it < limit; ++it) {
+		(output + it)->H = max(0, 
+								max((output + it - 1)->N, 
+									(output + it - 1)->V
 								   ) 
 								- penalty->open + it * penalty->extension);
-		if ((*(output + it)).H > h_max.val) {
-			h_max.val = (*(output + it)).H;
+		if ((output + it)->H > h_max.val) {
+			h_max.val = (output + it)->H;
 			h_max.seg_idx = seq_idx;
 		}
 	}
@@ -112,10 +116,18 @@ __global__ void find_score (gap *penalty,
 		//popunjavanje
 	typedef cub::BlockScan<seg_val, THREADS> BlockScan;
 	__shared__ typename BlockScan::SmemStorage scan_storage;
-	
+	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
+	(output + start)->H = max(0, h_max.val - it * penalty->extension);
+	for (it = start + 1; it < limit; ++it) {
+		if (*(horizontal + it - 1) == config.reset)
+			(output + it)->H = INIT_VAL;
+		else
+			(output + it)->H = max(0, (output + it - 1)->H - it * penalty->extension);
+	}
+		
 	//seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
 	//if (threadIdx.x == 0)
-	//	*(aux + blockIdx.x) = block_max;
+	//	(*(aux + blockIdx.x)) = block_max;
 	//__syncthreads();
 	//if (blockIdx.x == 0) {
 	//	int proc_chunk = (config.grid_size + config.block_size - 1) / config.block_size;
@@ -125,29 +137,31 @@ __global__ void find_score (gap *penalty,
 	//	proc_max.val = 0;
 	//	proc_max.seg_idx = 0;
 	//	for (int i = proc_start; i < proc_limit; ++i) {
-	//		if (proc_max < *(aux + i))
-	//			proc_max = *(aux + i);
+	//		if (proc_max < (*(aux + i)))
+	//			proc_max = (*(aux + i));
 	//	}
-	//	BlockScan::ExclusiveScan(scan_storage, proc_max, proc_max, identity, maxop<seg_val>());
-	//	
-	//	if (*(aux + proc_start) < proc_max)
-	//		*(aux + proc_start) = proc_max;
 	//	for (int i = proc_start + 1; i < proc_limit; ++i)
-	//		*(aux + i) = mymax<seg_val>(*(aux + i), *(aux + i - 1));
+	//		(*(aux + i)) = mymax<seg_val>(identity, (*(aux + i - 1)));
+	//	BlockScan::ExclusiveScan(scan_storage, proc_max, proc_max, identity, maxop<seg_val>());
+	//
+	//	(*(aux + proc_start)) = mymax<seg_val>(identity, proc_max);
+	//	for (int i = proc_start + 1; i < proc_limit; ++i)
+	//		(*(aux + i)) = mymax<seg_val>(identity, (*(aux + i - 1)));
 	//}
 	//
 	//__syncthreads();
 	//if (threadIdx.x == 0)
-	//	h_max = mymax<seg_val>(*(aux + blockIdx.x), h_max);
-	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
+	//	h_max = mymax<seg_val>((*(aux + blockIdx.x)), identity);
+	//BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
+	//
+	//(*(output + start)).H = max(0, h_max.val - it * penalty->extension);
+	//for (it = start + 1; it < limit; ++it) {
+	//	if (*(horizontal + it - 1) == config.reset)
+	//		(*(output + it)).H = INIT_VAL;
+	//	else
+	//		(*(output + it)).H = max(0, (*(output + it - 1)).H - it * penalty->extension);
+	//}
 
-	(*(output + start)).H = max(0, h_max.val - it * penalty->extension);
-	for (it = start + 1; it < limit; ++it) {
-		if (*(horizontal + it - 1) == config.reset)
-			(*(output + it)).H = INIT_VAL;
-		else
-			(*(output + it)).H = max(0, (*(output + it - 1)).H - it * penalty->extension);
-	}
 }
 
 #endif

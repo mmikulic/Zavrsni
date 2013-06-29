@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 
 #include "cuda.h"
 #include "structs.cuh"
@@ -138,9 +139,9 @@ int main(int argc, char **argv) {
 		strcat(horizontal, reset_str);
 		strcat(horizontal, get_protein(argv[i], config.reset, &seq_count));
 	}
-	printf("Vertical:\n");
+	printf("Vertical(%d):\n", v_len);
 	print(vertical, v_len);
-	printf("Horizontal:\n");
+	printf("Horizontal(%d):\n", h_len);
 	print(horizontal, h_len);
 	
 	int *seq_last_idx = (int *)malloc(seq_count * sizeof(int));
@@ -154,14 +155,14 @@ int main(int argc, char **argv) {
 	
 	int row_len = h_len + 1;
 	config.block_size = THREADS;
-	config.thread_chunk = (row_len + 0.01 * row_len - 1) / (0.01 * row_len);
-	config.grid_size = (row_len + config.block_size * config.thread_chunk - 1) / (config.block_size * config.thread_chunk);
+	config.thread_chunk = (row_len + config.block_size - 1) / config.block_size;
+	config.grid_size = 1;
 	
 	data *matRow[2];
 	init(&matRow[0], 0, row_len);
 	init(&matRow[1], 0, row_len);
 	
-	int total_max = -1;
+	int total_max = 0;
 	gap penalty;
 	penalty.open = 12;
 	penalty.extension = 2;
@@ -175,10 +176,11 @@ int main(int argc, char **argv) {
 	seg_val *dev_auxiliary;
 	
 	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, config.grid_size * sizeof(seg_val)), __LINE__);
-	cudaSetAndCopyToDevice((void **)&devMatRow[0], matRow[0], row_len * sizeof(data), __LINE__);
-	cudaSetAndCopyToDevice((void **)&devMatRow[1], matRow[1], row_len * sizeof(data), __LINE__);
+	safeAPIcall(cudaMemset((void *)dev_auxiliary, 0, config.grid_size * sizeof(seg_val)), __LINE__);
+	cudaSetAndCopyToDevice((void **)&(devMatRow[0]), matRow[0], row_len * sizeof(data), __LINE__);
+	cudaSetAndCopyToDevice((void **)&(devMatRow[1]), matRow[1], row_len * sizeof(data), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_seq_last_idx, seq_last_idx, seq_count * sizeof(int), __LINE__);
-	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, h_len * sizeof(char), __LINE__);
+	cudaSetAndCopyToDevice((void **)&dev_h, horizontal, (h_len + 1) * sizeof(char), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_penalty, &penalty, sizeof(gap), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_total_max, &total_max, sizeof(int), __LINE__);
 	
@@ -203,7 +205,7 @@ int main(int argc, char **argv) {
 		curr ^= 1;
 	}
 	clock_t end_time = clock();
-	printf("Time: %d ticks\n", end_time - start_time);
+	printf("Time: %d ticks, %lf s\n", end_time - start_time, double(end_time - start_time) / CLOCKS_PER_SEC);
 	cudaCopyToHostAndFree(&total_max, dev_total_max, sizeof(int), __LINE__);
 	printf("max local alignment: %d\n", total_max);
 	
