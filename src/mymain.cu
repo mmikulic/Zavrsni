@@ -177,9 +177,9 @@ int main(int argc, char **argv) {
 	char *dev_h;
 	data *devMatRow[2];
 	seg_val *dev_auxiliary;
+	int aux_size = config.block_size * ceildiv(config.grid_size, config.block_size);
 	
-	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, config.grid_size * sizeof(seg_val)), __LINE__);
-	safeAPIcall(cudaMemset((void *)dev_auxiliary, 0, config.grid_size * sizeof(seg_val)), __LINE__);
+	safeAPIcall(cudaMalloc((void **)&dev_auxiliary, aux_size * sizeof(seg_val)), __LINE__);
 	cudaSetAndCopyToDevice((void **)&(devMatRow[0]), matRow[0], row_len * sizeof(data), __LINE__);
 	cudaSetAndCopyToDevice((void **)&(devMatRow[1]), matRow[1], row_len * sizeof(data), __LINE__);
 	cudaSetAndCopyToDevice((void **)&dev_seq_last_idx, seq_last_idx, seq_count * sizeof(int), __LINE__);
@@ -195,6 +195,7 @@ int main(int argc, char **argv) {
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
 	for (int i = 0; i < v_len; ++i) {
+		safeAPIcall(cudaMemset((void *)dev_auxiliary, 0, aux_size * sizeof(seg_val)), __LINE__);
 		find_score<<<config.grid_size, config.block_size>>>(
 			dev_penalty,
 			dev_h,
@@ -206,8 +207,23 @@ int main(int argc, char **argv) {
 			dev_total_max,
 			dev_seq_last_idx,
 			seq_count,
-			dev_auxiliary
+			dev_auxiliary,
+			aux_size
 		);
+		if (config.grid_size > 1) {
+			cudaDeviceSynchronize();
+			interblock_scan<<<1, config.block_size>>>(dev_auxiliary,
+													  config);
+			cudaDeviceSynchronize();
+			update_H<<<config.grid_size, config.block_size>>>(devMatRow[curr],
+															  dev_auxiliary,
+															  dev_penalty,
+															  row_len,
+															  config,
+															  dev_h,
+															  seq_count,
+															  dev_seq_last_idx);
+		}
 		curr ^= 1;
 	}
 	cudaEventRecord(stop, 0);
