@@ -25,8 +25,13 @@ __device__ __host__ int closestPow2(int n) {
 }
 */
 
-template < typename T > __device__ __host__ T mymax(T &a, T &b) {
+//args changed from T& to T
+template < typename T > __device__ __host__ T mymax(T a, T b) {
 	return a < b ? b : a;
+}
+
+__device__ __host__ int ceildiv(int a, int b) {
+	return ((a + b - 1) / b);
 }
 
 void exitWithMsg(const char *msg, int exitCode) {

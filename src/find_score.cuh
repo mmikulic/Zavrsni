@@ -6,7 +6,7 @@
 #include "cub/cub/cub.cuh"
 
 #define INIT_VAL 0
-#define THREADS 1024
+#define THREADS 512
 
 __global__ void find_score (gap *penalty, 
 					   	   char *horizontal, 
@@ -22,8 +22,9 @@ __global__ void find_score (gap *penalty,
    	int id = blockIdx.x * config.block_size + threadIdx.x;
 	int start = id * config.thread_chunk;
 	int limit = min(start + config.thread_chunk, row_len);
-	int seq_idx = placement(seq_last_idx, seq_count, start);
+	int init_seq_idx = placement(seq_last_idx, seq_count, start);
 	int it = start;
+	int seq_idx = init_seq_idx;
 
 	seg_val max_scr;
 	max_scr.val = INIT_VAL;
@@ -45,11 +46,10 @@ __global__ void find_score (gap *penalty,
 	}
 	
 	for (; it < limit; ++it) {
-		if (*(horizontal + it - 1) == config.reset) {
+		if ((*(horizontal + it - 1)) == config.reset) {
 			(output + it)->N = INIT_VAL;
 			(output + it)->H = INIT_VAL;
 			(output + it)->V = INIT_VAL;
-			++seq_idx;
 		} else {
 			(output + it)->N = max(0, ((*(horizontal + it - 1)) == vertical) + 
 										max((input + it - 1)->N,
@@ -68,36 +68,42 @@ __global__ void find_score (gap *penalty,
 			max_scr.val = (output + it)->N;
 	}
 	
-	//reduce faza za N i V
+	//block reduce faza za N i V
 	__syncthreads();
 	typedef cub::BlockReduce<seg_val, THREADS> BlockReduce;
 	__shared__ typename BlockReduce::SmemStorage reduce_storage;
 	max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
 
-	//device reduce faza za N i V
-	//__syncthreads();
-	//int curr_size = config.grid_size;
-	//while (curr_size > 1) {
-	//	if (blockIdx.x < curr_size && threadIdx.x == 0) {
-	//		//printf("block: %d, thread: %d max = %d\n", blockIdx.x, threadIdx.x, max_scr.val);
-	//		(*(aux + blockIdx.x)) = max_scr;
-	//		//printf("\tstored: aux[%d] = %d\n", blockIdx.x, (*(aux + blockIdx.x)).val);
-	//	}
-	//	__syncthreads();
-	//	max_scr = (id < curr_size ? (*(aux + id)) : identity);
-	//	curr_size = (curr_size + config.block_size - 1) / config.block_size;
-	//	__syncthreads();
-	//	if (id - threadIdx.x < curr_size) {
-	//		//printf("\t id: %d new max = %d\n",id, max_scr.val);
-	//		max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
-	//	}
-	//}
+	//------------------device reduce faza za N i V------------------
+	
+	__syncthreads();
+	int proc_blocks = config.grid_size;
+	int block_id = blockIdx.x * config.block_size;
+	while (proc_blocks > 1) {
+		if (blockIdx.x < proc_blocks && threadIdx.x == 0) {
+			(*(aux + blockIdx.x)) = max_scr;
+		}
+		__syncthreads();
+		proc_blocks = ceildiv(proc_blocks, config.block_size);
+		if (block_id < proc_blocks) {
+			max_scr = (id < proc_blocks ? (*(aux + id)) : identity);
+			max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
+		}
+	}
+	
+	//---------------------------------------------------------------
+	
 	if (id == 0 && (*total_max) < max_scr.val)
 		(*total_max) = max_scr.val;
 
 	//H
 	__syncthreads();
+	seq_idx = init_seq_idx;
 	for (it = start + (start == 0 ? 1 : 0); it < limit; ++it) {
+		if ((*(horizontal + it - 1)) == config.reset) {
+			++seq_idx;
+			continue;
+		}
 		(output + it)->H = max(0, 
 								max((output + it - 1)->N, 
 									(output + it - 1)->V
@@ -108,60 +114,72 @@ __global__ void find_score (gap *penalty,
 			h_max.seg_idx = seq_idx;
 		}
 	}
-	
-	//devicescan faza za H
-		//scan unutar bloka
-		//reduce unutar bloka
-		//scan izmedu blokova
-		//popunjavanje
+
 	typedef cub::BlockScan<seg_val, THREADS> BlockScan;
 	__shared__ typename BlockScan::SmemStorage scan_storage;
+	
+	//block scan za H
+	//BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
+	//
+	//(output + start)->H = max(0, h_max.val - it * penalty->extension);
+	//for (it = start + 1; it < limit; ++it) {
+	//	if (*(horizontal + it - 1) == config.reset)
+	//		(output + it)->H = INIT_VAL;
+	//	else
+	//		(output + it)->H = max(0, (output + it - 1)->H - it * penalty->extension);
+	//}
+	
+	//------------------device scan faza za H------------------
 	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
+	seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
+	if (threadIdx.x == 0)
+		(*(aux + blockIdx.x)) = block_max;
+	
+	__syncthreads();
+	int proc_chunk = ceildiv(config.grid_size, config.block_size);
+	if (blockIdx.x == 0) {
+		int proc_start = threadIdx.x * proc_chunk;
+		int proc_limit = min(proc_start + proc_chunk, config.grid_size);
+		seg_val thread_max = identity;
+		for (int i = proc_start; i < proc_limit; ++i)
+			thread_max = mymax<seg_val>(thread_max, (*(aux + i)));
+		BlockScan::ExclusiveScan(scan_storage, thread_max, thread_max, identity, maxop<seg_val>());
+		(*(aux + proc_start)) = mymax<seg_val>(thread_max, (*(aux + proc_start)));
+		for (int i = proc_start + 1; i < proc_limit; ++i)
+			(*(aux + i)) = mymax<seg_val>((*(aux + i - 1)), (*(aux + i)));
+	}
+	
+	//---------------------------------------------------------
+	
 	(output + start)->H = max(0, h_max.val - it * penalty->extension);
 	for (it = start + 1; it < limit; ++it) {
 		if (*(horizontal + it - 1) == config.reset)
 			(output + it)->H = INIT_VAL;
 		else
 			(output + it)->H = max(0, (output + it - 1)->H - it * penalty->extension);
-	}
-		
-	//seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
-	//if (threadIdx.x == 0)
-	//	(*(aux + blockIdx.x)) = block_max;
-	//__syncthreads();
-	//if (blockIdx.x == 0) {
-	//	int proc_chunk = (config.grid_size + config.block_size - 1) / config.block_size;
-	//	int proc_start = threadIdx.x * proc_chunk;
-	//	int proc_limit = min(proc_start + proc_chunk, config.grid_size);
-	//	seg_val proc_max;
-	//	proc_max.val = 0;
-	//	proc_max.seg_idx = 0;
-	//	for (int i = proc_start; i < proc_limit; ++i) {
-	//		if (proc_max < (*(aux + i)))
-	//			proc_max = (*(aux + i));
-	//	}
-	//	for (int i = proc_start + 1; i < proc_limit; ++i)
-	//		(*(aux + i)) = mymax<seg_val>(identity, (*(aux + i - 1)));
-	//	BlockScan::ExclusiveScan(scan_storage, proc_max, proc_max, identity, maxop<seg_val>());
-	//
-	//	(*(aux + proc_start)) = mymax<seg_val>(identity, proc_max);
-	//	for (int i = proc_start + 1; i < proc_limit; ++i)
-	//		(*(aux + i)) = mymax<seg_val>(identity, (*(aux + i - 1)));
-	//}
-	//
-	//__syncthreads();
-	//if (threadIdx.x == 0)
-	//	h_max = mymax<seg_val>((*(aux + blockIdx.x)), identity);
-	//BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
-	//
-	//(*(output + start)).H = max(0, h_max.val - it * penalty->extension);
-	//for (it = start + 1; it < limit; ++it) {
-	//	if (*(horizontal + it - 1) == config.reset)
-	//		(*(output + it)).H = INIT_VAL;
-	//	else
-	//		(*(output + it)).H = max(0, (*(output + it - 1)).H - it * penalty->extension);
-	//}
 
+	
+	//------------------device scan faza za H v2------------------
+	//seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
+	//
+	//int step = 1;
+	//proc_blocks = config.grid_size;
+	//__syncthreads();
+	//while (proc_blocks > 1) {		
+	//	if (blockIdx.x < proc_blocks && threadIdx.x == 0)
+	//		(*(aux + (1 + blockIdx.x) * step - 1)) = block_max;
+	//	proc_blocks = ceildiv(proc_blocks, config.block_size);
+	//	__syncthreads();
+	//	if (blockIdx.x < proc_blocks) {
+	//		if ((1 + id) * step - 1 < config.grid_size)
+	//			block_max = (*(aux + (1 + id) * step - 1));
+	//		else
+	//			block_max = identity;
+	//		block_max = BlockReduce::Reduce(reduce_storage, block_max, maxop<seg_val>());
+	//	}
+	//	step *= config.block_size;
+	//}
+	//------------------device scan faza za H--------------------
 }
 
 #endif
