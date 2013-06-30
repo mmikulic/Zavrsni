@@ -156,8 +156,10 @@ int main(int argc, char **argv) {
 	
 	int row_len = h_len + 1;
 	config.block_size = THREADS;
-	config.thread_chunk = ceildiv(row_len, config.block_size);
-	config.grid_size = 1;
+	config.thread_chunk = min(100, ceildiv(row_len, 0.01 * row_len));
+	config.grid_size = ceildiv(row_len, config.block_size * config.thread_chunk);
+	//config.thread_chunk = ceildiv(row_len, config.block_size);
+	//config.grid_size = 1;
 	
 	data *matRow[2];
 	init(&matRow[0], 0, row_len);

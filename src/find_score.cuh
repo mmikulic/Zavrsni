@@ -51,7 +51,7 @@ __global__ void find_score (gap *penalty,
 			(output + it)->H = INIT_VAL;
 			(output + it)->V = INIT_VAL;
 		} else {
-			(output + it)->N = max(0, ((*(horizontal + it - 1)) == vertical) + 
+			(output + it)->N = max(0, (*(horizontal + it - 1) == vertical) + 
 										max((input + it - 1)->N,
 											max((input + it - 1)->H, 
 												(input + it - 1)->V
@@ -81,21 +81,21 @@ __global__ void find_score (gap *penalty,
 	int block_id = blockIdx.x * config.block_size;
 	while (proc_blocks > 1) {
 		if (blockIdx.x < proc_blocks && threadIdx.x == 0) {
-			(*(aux + blockIdx.x)) = max_scr;
+			*(aux + blockIdx.x) = max_scr;
 		}
 		__syncthreads();
 		proc_blocks = ceildiv(proc_blocks, config.block_size);
 		if (block_id < proc_blocks) {
-			max_scr = (id < proc_blocks ? (*(aux + id)) : identity);
+			max_scr = (id < proc_blocks ? *(aux + id) : identity);
 			max_scr = BlockReduce::Reduce(reduce_storage, max_scr, maxop<seg_val>());
 		}
 	}
 	
 	//---------------------------------------------------------------
 	
-	if (id == 0 && (*total_max) < max_scr.val)
-		(*total_max) = max_scr.val;
-
+	if (id == 0 && *total_max < max_scr.val)
+		*total_max = max_scr.val;
+/*
 	//H
 	__syncthreads();
 	seq_idx = init_seq_idx;
@@ -167,8 +167,8 @@ __global__ void find_score (gap *penalty,
 			(output + it)->H = INIT_VAL;
 		else
 			(output + it)->H = max(0, (output + it - 1)->H - it * penalty->extension);
-
-	
+	}
+	*/
 	//------------------device scan faza za H v2------------------
 	//seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
 	//
