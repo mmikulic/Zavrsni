@@ -131,22 +131,32 @@ __global__ void find_score (gap *penalty,
 	
 	//------------------device scan faza za H------------------
 	BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
-	seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
-	if (threadIdx.x == 0)
-		(*(aux + blockIdx.x)) = block_max;
 	
-	__syncthreads();
-	int proc_chunk = ceildiv(config.grid_size, config.block_size);
-	if (blockIdx.x == 0) {
-		int proc_start = threadIdx.x * proc_chunk;
-		int proc_limit = min(proc_start + proc_chunk, config.grid_size);
-		seg_val thread_max = identity;
-		for (int i = proc_start; i < proc_limit; ++i)
-			thread_max = mymax<seg_val>(thread_max, (*(aux + i)));
-		BlockScan::ExclusiveScan(scan_storage, thread_max, thread_max, identity, maxop<seg_val>());
-		(*(aux + proc_start)) = mymax<seg_val>(thread_max, (*(aux + proc_start)));
-		for (int i = proc_start + 1; i < proc_limit; ++i)
-			(*(aux + i)) = mymax<seg_val>((*(aux + i - 1)), (*(aux + i)));
+	if (config.grid_size > 1) {
+		seg_val block_max = BlockReduce::Reduce(reduce_storage, h_max, maxop<seg_val>());
+		if (threadIdx.x == 0)
+			(*(aux + blockIdx.x)) = block_max;
+		
+		__syncthreads();
+		if (blockIdx.x == 0) {
+			int proc_chunk = ceildiv(config.grid_size, config.block_size);
+			int proc_start = threadIdx.x * proc_chunk;
+			int proc_limit = min(proc_start + proc_chunk, config.grid_size);
+			seg_val thread_max = identity;
+			for (int i = proc_start; i < proc_limit; ++i)
+				thread_max = mymax<seg_val>(thread_max, (*(aux + i)));
+			BlockScan::ExclusiveScan(scan_storage, thread_max, thread_max, identity, maxop<seg_val>());
+			(*(aux + proc_start)) = mymax<seg_val>(thread_max, (*(aux + proc_start)));
+			for (int i = proc_start + 1; i < proc_limit; ++i)
+				(*(aux + i)) = mymax<seg_val>((*(aux + i - 1)), (*(aux + i)));
+		}
+		
+		__syncthreads();
+		if (threadIdx.x == 0)
+			h_max = (*(aux + blockIdx.x));
+		__syncthreads();
+		BlockScan::ExclusiveScan(scan_storage, h_max, h_max, identity, maxop<seg_val>());
+		
 	}
 	
 	//---------------------------------------------------------
